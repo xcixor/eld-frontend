@@ -81,7 +81,12 @@ export const authService = {
           },
         },
       );
-      return response.data;
+
+      // Return the data with the status code included
+      return {
+        ...response.data,
+        status_code: response.status
+      };
     } catch (error) {
       const axiosError = error as AxiosError<ApiError>;
       console.error(

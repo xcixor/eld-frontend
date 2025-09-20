@@ -170,7 +170,7 @@ export function RegistrationForm({
 
           <CardDescription className="text-dark-600">
             Signup below or{" "}
-            <Link href="/auth/signin" className="underline">
+            <Link href="/auth/login" className="underline">
               signin
             </Link>
           </CardDescription>
