@@ -12,6 +12,7 @@ declare module "next-auth" {
       license_number?: string;
       license_state?: string;
       token?: string;
+      email?: string;
     };
   }
   export interface User extends DefaultUser {
@@ -25,5 +26,6 @@ declare module "next-auth" {
     license_number?: string;
     license_state?: string;
     token?: string;
+    email?: string;
   }
 }

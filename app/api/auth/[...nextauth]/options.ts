@@ -21,20 +21,18 @@ export const options = {
             password: credentials.password,
           });
 
-          console.log("Login response:", loginResponse);
-
           return {
-            id: loginResponse.user.id.toString(),
-            username: loginResponse.user.username,
-            email: loginResponse.user.email,
-            first_name: loginResponse.user.first_name,
-            last_name: loginResponse.user.last_name,
+            id: loginResponse.user?.id?.toString() ?? "",
+            username: loginResponse.user?.username ?? "",
+            email: loginResponse.user?.email ?? "",
+            first_name: loginResponse.user?.first_name ?? "",
+            last_name: loginResponse.user?.last_name ?? "",
             driver_number: "",
             initials: "",
             home_operating_center: "",
             license_number: "",
             license_state: "",
-            token: loginResponse.token,
+            token: loginResponse.token ?? "",
           };
         } catch (error) {
           console.error("Authentication error:", error);
