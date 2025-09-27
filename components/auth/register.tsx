@@ -61,9 +61,6 @@ export function RegistrationForm({
 
   const [isPasswordHidden, setIsPasswordHidden] = useState(true);
 
-
-
-
   const toggleIsPasswordHidden = () =>
     setIsPasswordHidden((current) => !current);
 
@@ -116,14 +113,16 @@ export function RegistrationForm({
           toast("Signup failed. Please try again.");
         }
       } catch (error) {
-
         // Handle validation errors with field-specific messages
-        if (error instanceof Error && 'fieldErrors' in error) {
+        if (error instanceof Error && "fieldErrors" in error) {
           const validationError = error as ValidationError;
 
           // Handle non-field errors (show as toast)
-          if (validationError.nonFieldErrors && validationError.nonFieldErrors.length > 0) {
-            validationError.nonFieldErrors.forEach(errorMessage => {
+          if (
+            validationError.nonFieldErrors &&
+            validationError.nonFieldErrors.length > 0
+          ) {
+            validationError.nonFieldErrors.forEach((errorMessage) => {
               toast.error(errorMessage);
             });
           }
@@ -143,7 +142,10 @@ export function RegistrationForm({
           }
 
           // Show generic message if there are field errors
-          if (validationError.fieldErrors && Object.keys(validationError.fieldErrors).length > 0) {
+          if (
+            validationError.fieldErrors &&
+            Object.keys(validationError.fieldErrors).length > 0
+          ) {
             toast("Please fix the errors below");
           }
         } else {
@@ -170,7 +172,7 @@ export function RegistrationForm({
 
           <CardDescription className="text-dark-600">
             Signup below or{" "}
-            <Link href="/auth/login" className="underline">
+            <Link href="/" className="underline">
               signin
             </Link>
           </CardDescription>
@@ -198,12 +200,12 @@ export function RegistrationForm({
                 </div>
 
                 <CustomFormField
-                    fieldType={FormFieldType.INPUT}
-                    control={form.control}
-                    name="email"
-                    label="Email"
-                    placeholder="example@mail.com"
-                  />
+                  fieldType={FormFieldType.INPUT}
+                  control={form.control}
+                  name="email"
+                  label="Email"
+                  placeholder="example@mail.com"
+                />
 
                 <FormField
                   control={form.control}
