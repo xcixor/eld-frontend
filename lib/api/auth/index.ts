@@ -85,7 +85,7 @@ export const authService = {
       // Return the data with the status code included
       return {
         ...response.data,
-        status_code: response.status
+        status_code: response.status,
       };
     } catch (error) {
       const axiosError = error as AxiosError<ApiError>;
@@ -97,8 +97,8 @@ export const authService = {
       if (axiosError.response?.data?.non_field_errors) {
         throw new Error(axiosError.response.data.non_field_errors[0]);
       }
-
-      throw new Error("Login failed");
+      const errorMessage = axiosError.response?.data.error;
+      throw new Error(`${errorMessage}`);
     }
   },
 
@@ -114,13 +114,15 @@ export const authService = {
 
       return {
         ...response.data,
-        status_code: response.status
+        status_code: response.status,
       };
     } catch (error) {
       const axiosError = error as AxiosError<ApiError>;
 
       if (axiosError.response?.status === 400 && axiosError.response?.data) {
-        const validationError = new Error("Validation failed") as ValidationError;
+        const validationError = new Error(
+          "Validation failed",
+        ) as ValidationError;
         validationError.fieldErrors = {};
         validationError.nonFieldErrors = [];
 
@@ -129,16 +131,16 @@ export const authService = {
         Object.keys(serverErrors).forEach((field) => {
           const fieldError = serverErrors[field];
 
-          if (field === 'non_field_errors') {
+          if (field === "non_field_errors") {
             if (Array.isArray(fieldError)) {
               validationError.nonFieldErrors = fieldError;
-            } else if (typeof fieldError === 'string') {
+            } else if (typeof fieldError === "string") {
               validationError.nonFieldErrors = [fieldError];
             }
           } else {
             if (Array.isArray(fieldError)) {
               validationError.fieldErrors![field] = fieldError;
-            } else if (typeof fieldError === 'string') {
+            } else if (typeof fieldError === "string") {
               validationError.fieldErrors![field] = [fieldError];
             }
           }
