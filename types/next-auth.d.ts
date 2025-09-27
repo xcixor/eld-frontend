@@ -3,6 +3,7 @@ import { DefaultUser } from "next-auth";
 declare module "next-auth" {
   export interface Session {
     user: {
+      id: string;
       username?: string;
       first_name?: string;
       last_name?: string;
@@ -16,7 +17,7 @@ declare module "next-auth" {
     };
   }
   export interface User extends DefaultUser {
-    username: string;
+    id: string;
     username?: string;
     first_name?: string;
     last_name?: string;
