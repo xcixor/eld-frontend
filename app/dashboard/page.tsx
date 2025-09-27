@@ -1,4 +1,8 @@
-export default function DashboardPage() {
+import { getCurrentSessionUser } from "@/lib/auth";
+
+export default async function DashboardPage() {
+    const user = await getCurrentSessionUser();
+    console.log("Current user:", user);
   return (
     <div className="container mx-auto py-8">
       <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
