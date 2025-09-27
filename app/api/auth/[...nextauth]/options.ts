@@ -21,6 +21,8 @@ export const options = {
             password: credentials.password,
           });
 
+          console.log("Login response:", loginResponse);
+
           return {
             id: loginResponse.user.id.toString(),
             username: loginResponse.user.username,
@@ -87,8 +89,8 @@ export const options = {
   },
 
   pages: {
-    signIn: "/auth/signin",
-    error: `/auth/error?callBackUrl=/auth/signin`,
+    signIn: "/",
+    error: `/auth/error?callBackUrl=/`,
   },
 
   secret: process.env.NEXTAUTH_SECRET,

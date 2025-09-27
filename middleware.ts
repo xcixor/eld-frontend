@@ -56,12 +56,9 @@ export async function middleware(request: NextRequest) {
     secret: process.env.NEXTAUTH_SECRET,
   });
 
+  console.log("Middleware - Path:", path, "Token:", token ? "Yes" : "No");
+
   if (token && path === "/") {
-    if (token.role === "Super Admin") {
-      return NextResponse.redirect(
-        new URL("/dashboard/administration", request.url),
-      );
-    }
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
@@ -80,23 +77,6 @@ export async function middleware(request: NextRequest) {
     return buildSignOutRedirect(request);
   }
 
-  if (token.role === "Super Admin") {
-    if (path === "/") {
-      return NextResponse.redirect(
-        new URL("/dashboard", request.url),
-      );
-    }
-    return NextResponse.next();
-  }
-
-  if (path.startsWith("/system")) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-
-  if (path.startsWith("/settings/customer") && token.role === "Account Admin") {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-
   if (path === "/") {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
@@ -105,9 +85,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/",
-    "/register",
-    "/((?!api|_next|auth|static|.*\\..*$).*)",
-  ],
+  matcher: ["/", "/register", "/((?!api|_next|auth|static|.*\\..*$).*)"],
 };

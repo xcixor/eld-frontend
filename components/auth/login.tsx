@@ -28,11 +28,13 @@ import CustomFormField, { FormFieldType } from "../CustomFormField";
 import SubmitButton from "@/components/submit-button";
 import { LoginFormValidation } from "@/lib/validation";
 import { Eye, EyeOff } from "lucide-react";
-import { authService } from "@/lib/api/auth";
+
+import { signIn } from "next-auth/react";
 
 type LoginProps = {
   className?: string;
   defaultValues?: Partial<z.infer<typeof LoginFormValidation>>;
+  callbackUrl?: string;
 };
 
 export function LoginForm({ className, defaultValues, ...props }: LoginProps) {
@@ -60,21 +62,12 @@ export function LoginForm({ className, defaultValues, ...props }: LoginProps) {
     if (isValid) {
       setIsLoading(true);
       try {
-        const response = await authService.login({
+        await signIn("credentials", {
           username,
           password,
+          redirect: true,
+          callbackUrl: props.callbackUrl ?? "/dashboard",
         });
-
-        if (response.status_code === 200) {
-          toast("Login successful!");
-          // Store token if needed
-          if (response.token) {
-            localStorage.setItem("auth_token", response.token);
-          }
-          router.push("/dashboard");
-        } else {
-          toast("Login failed. Please try again.");
-        }
       } catch (error) {
         if (error instanceof Error) {
           toast.error(error.message);
