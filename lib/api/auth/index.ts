@@ -1,3 +1,4 @@
+import { DriverInfo, LoginUser } from "@/types/next-auth";
 import AxiosClient from "../client";
 import { AxiosError } from "axios";
 
@@ -22,34 +23,14 @@ export interface RegisterDto {
 
 export interface AuthResponse {
   status_code: number;
-  // Registration response fields
-  id?: number;
-  username?: string;
-  email?: string;
-  first_name?: string;
-  last_name?: string;
-  // Login response fields
-  token?: string;
-  user?: {
-    id: number;
-    username: string;
-    email: string;
-    first_name: string;
-    last_name: string;
-  };
-  expires?: string;
+  user: LoginUser;
+  driver: DriverInfo;
+    token: string;
+    expires?: string;
 }
 
-export interface User {
-  id: number;
-  username: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-}
 
 export interface ApiError {
-  // DRF validation error structure
   non_field_errors?: string[];
   [key: string]: string[] | string | unknown;
 }
@@ -59,14 +40,12 @@ export interface ValidationError extends Error {
   nonFieldErrors?: string[];
 }
 
-// API Base URL for your Django backend
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_BASE_API_URL || "http://127.0.0.1:8000";
 
 const authClient = new AxiosClient(API_BASE_URL);
 
 export const authService = {
-  // Login user
   login: async (loginData: LoginDto): Promise<AuthResponse> => {
     try {
       const response = await authClient.getInstance().post(
@@ -82,7 +61,6 @@ export const authService = {
         },
       );
 
-      // Return the data with the status code included
       return {
         ...response.data,
         status_code: response.status,
