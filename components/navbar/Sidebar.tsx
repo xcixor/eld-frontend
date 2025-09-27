@@ -13,7 +13,7 @@ export const Sidebar = async () => {
       {user && (
         <>
           <div className="py-6">
-            <Link href="/profile/dashboard/">
+            <Link href="/dashboard/">
               <Avatar>
                 <AvatarFallback>
                   <User2 />
