@@ -340,7 +340,7 @@ export function ManageLogSheet({
           >
             Recalculate from Periods
           </Button>
-          <Button onClick={form.handleSubmit(saveSummary)}>Save Summary</Button>
+          {/* <Button onClick={form.handleSubmit(saveSummary)}>Save Summary</Button> */}
         </div>
       </div>
 
