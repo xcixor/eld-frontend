@@ -33,44 +33,44 @@ export default function TripWrapper({ tripId }: { tripId: string }) {
     fetchLogSheets();
   }, [tripId]);
 
-  useEffect(() => {
-    async function loadTripAndRoute() {
-      try {
-        const t = await tripService.getTripById(Number(tripId));
-        setTrip(t);
-        const pickup =
-          t.pickup_lat && t.pickup_lng
-            ? { lat: t.pickup_lat, lng: t.pickup_lng }
-            : undefined;
-        const dropoff =
-          t.dropoff_lat && t.dropoff_lng
-            ? { lat: t.dropoff_lat, lng: t.dropoff_lng }
-            : undefined;
-        if (pickup && dropoff) {
-          const route = await fetchRouteOSRM(pickup, dropoff);
-          setRoutePoints(route.points);
-          const suggested = suggestStopsByTime(
-            route.points,
-            route.duration_min,
-            480,
-          ); // suggest every 8h
-          setStops(
-            suggested.map((p, idx) => ({
-              position: p,
-              title: idx === 0 ? "8h Break" : `Rest Stop ${idx + 1}`,
-              note: idx === 0 ? "Take 30 min break (8h driving)" : undefined,
-            })),
-          );
-        } else {
-          setRoutePoints(null);
-          setStops(null);
-        }
-      } catch {
-        // ignore map errors in UI; map is optional
-      }
-    }
-    loadTripAndRoute();
-  }, [tripId]);
+  // useEffect(() => {
+  //   async function loadTripAndRoute() {
+  //     try {
+  //       const t = await tripService.getTripById(Number(tripId));
+  //       setTrip(t);
+  //       const pickup =
+  //         t.pickup_lat && t.pickup_lng
+  //           ? { lat: t.pickup_lat, lng: t.pickup_lng }
+  //           : undefined;
+  //       const dropoff =
+  //         t.dropoff_lat && t.dropoff_lng
+  //           ? { lat: t.dropoff_lat, lng: t.dropoff_lng }
+  //           : undefined;
+  //       if (pickup && dropoff) {
+  //         const route = await fetchRouteOSRM(pickup, dropoff);
+  //         setRoutePoints(route.points);
+  //         const suggested = suggestStopsByTime(
+  //           route.points,
+  //           route.duration_min,
+  //           480,
+  //         ); // suggest every 8h
+  //         setStops(
+  //           suggested.map((p, idx) => ({
+  //             position: p,
+  //             title: idx === 0 ? "8h Break" : `Rest Stop ${idx + 1}`,
+  //             note: idx === 0 ? "Take 30 min break (8h driving)" : undefined,
+  //           })),
+  //         );
+  //       } else {
+  //         setRoutePoints(null);
+  //         setStops(null);
+  //       }
+  //     } catch {
+  //       console.error("Failed to load trip or route data");
+  //     }
+  //   }
+  //   loadTripAndRoute();
+  // }, [tripId]);
 
   return (
     <div className="space-y-6 p-6">
@@ -79,7 +79,7 @@ export default function TripWrapper({ tripId }: { tripId: string }) {
         <p className="text-muted-foreground mb-3 text-sm">
           Route and suggested rest stops based on driving time.
         </p>
-        <TripMap
+        {/* <TripMap
           current={
             trip?.current_lat && trip?.current_lng
               ? { lat: trip.current_lat, lng: trip.current_lng }
@@ -98,7 +98,7 @@ export default function TripWrapper({ tripId }: { tripId: string }) {
           route={routePoints ?? undefined}
           stops={stops ?? undefined}
           height={400}
-        />
+        /> */}
       </div>
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-2xl font-bold">Daily Log Sheets</h2>

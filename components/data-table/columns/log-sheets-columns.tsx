@@ -4,6 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { LogSheet } from "@/lib/api/logsheets";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export function useLogSheetsColumns(tripId: string) {
   const router = useRouter();
@@ -55,17 +56,15 @@ export function useLogSheetsColumns(tripId: string) {
       id: "actions",
       header: "Actions",
       cell: ({ row }) => (
+        <Link href={`/dashboard/trip/${tripId}/edit-logsheet/${row.original.id}`}>
         <Button
           size="sm"
           variant="outline"
-          onClick={() =>
-            router.push(
-              `/dashboard/trip/${tripId}/edit-logsheet/${row.original.id}`,
-            )
-          }
+          className="cursor-pointer"
         >
           Edit
         </Button>
+        </Link>
       ),
       enableSorting: false,
       enableHiding: false,
