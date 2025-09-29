@@ -98,9 +98,3 @@ The Manage Log Sheet page has three key parts:
 
 - If you can’t create a trip: Ensure you haven’t already created one today for the same driver. The UI should show: “Another trip has already been setup for today”.
 - Validation errors: Check the inline messages under fields; fix and resubmit.
-- API URL issues: Verify `NEXT_PUBLIC_BASE_API_URL` matches your backend base URL and that CORS is configured on the backend.
-
----
-
-If you want similar modal UX for editing log sheets or other entities, you can reuse the dialog component pattern used by the Trip and Log Sheet flows.
-
