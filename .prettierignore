@@ -6,3 +6,5 @@ dist/
 .circleci/
 public/
 scripts/
+package-lock.json
+pnpm-lock.yaml
