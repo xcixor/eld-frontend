@@ -5,23 +5,38 @@ import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/data-table/DataTable";
 import { useLogSheetsColumns } from "@/components/data-table/columns/log-sheets-columns";
 import { getLogSheetsForTrip, LogSheet } from "@/lib/api/logsheets";
-import { tripService, Trip } from "@/lib/api/trips";
-import TripMap from "@/components/map/TripMap";
-import { fetchRouteOSRM, suggestStopsByTime } from "@/lib/map/osrm";
+// import { tripService, Trip } from "@/lib/api/trips";
+// import TripMap from "@/components/map/TripMap";
+// import { fetchRouteOSRM, suggestStopsByTime } from "@/lib/map/osrm";
 
-export default function TripWrapper({ tripId }: { tripId: string }) {
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import LogSheetForm from "@/components/eld-logs/LogSheetForm";
+
+export default function TripWrapper({
+  tripId,
+  driverId,
+}: {
+  tripId: string;
+  driverId: number;
+}) {
   const router = useRouter();
   const [logSheets, setLogSheets] = useState<LogSheet[]>([]);
   const [loading, setLoading] = useState(true);
   const columns = useLogSheetsColumns(tripId);
-  const [trip, setTrip] = useState<Trip | null>(null);
-  const [routePoints, setRoutePoints] = useState<
-    { lat: number; lng: number }[] | null
-  >(null);
-  const [stops, setStops] = useState<
-    | { position: { lat: number; lng: number }; title: string; note?: string }[]
-    | null
-  >(null);
+  // const [trip, setTrip] = useState<Trip | null>(null);
+  // const [routePoints, setRoutePoints] = useState<
+  //   { lat: number; lng: number }[] | null
+  // >(null);
+  // const [stops, setStops] = useState<
+  //   | { position: { lat: number; lng: number }; title: string; note?: string }[]
+  //   | null
+  // >(null);
 
   useEffect(() => {
     async function fetchLogSheets() {
@@ -73,7 +88,7 @@ export default function TripWrapper({ tripId }: { tripId: string }) {
   // }, [tripId]);
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       <div>
         <h2 className="mb-2 text-2xl font-bold">Trip Overview</h2>
         <p className="text-muted-foreground mb-3 text-sm">
@@ -102,11 +117,25 @@ export default function TripWrapper({ tripId }: { tripId: string }) {
       </div>
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-2xl font-bold">Daily Log Sheets</h2>
-        <Button
-          onClick={() => router.push(`/dashboard/trip/${tripId}/add-logsheet`)}
-        >
-          Add Log Sheet
-        </Button>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>Add Log Sheet</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add Log Sheet</DialogTitle>
+            </DialogHeader>
+            <LogSheetForm
+              tripId={Number(tripId)}
+              driverId={driverId}
+              onSuccess={(createdId) => {
+                // After creating, refresh the table and navigate to edit page
+                getLogSheetsForTrip(tripId).then(setLogSheets);
+                router.push(`/dashboard/trip/${tripId}/edit-logsheet/${createdId}`);
+              }}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
       {loading ? (
         <div className="text-muted-foreground p-4 text-sm">Loading...</div>
