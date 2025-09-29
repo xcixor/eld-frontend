@@ -12,6 +12,19 @@ export interface Trip {
   status: string;
   estimated_start_time?: string;
   estimated_end_time?: string;
+  // Optional extra fields often present in responses
+  pickup_location?: string;
+  dropoff_location?: string;
+  current_location?: string;
+  start_time?: string;
+  end_time?: string;
+  // Coordinates (optional)
+  current_lat?: number | null;
+  current_lng?: number | null;
+  pickup_lat?: number | null;
+  pickup_lng?: number | null;
+  dropoff_lat?: number | null;
+  dropoff_lng?: number | null;
 }
 
 export interface CreateTripResponse {
@@ -115,6 +128,16 @@ export const tripService = {
 
             throw new Error("Trip creation failed");
 
+    }
+  }
+  ,
+  getTripById: async (id: number): Promise<Trip> => {
+    try {
+      const response = await tripsClient.getInstance().get(`/api/trips/${id}/`);
+      return response.data as Trip;
+    } catch (error) {
+      console.error("Failed to fetch trip details:", error);
+      throw new Error("Failed to fetch trip details.");
     }
   }
 

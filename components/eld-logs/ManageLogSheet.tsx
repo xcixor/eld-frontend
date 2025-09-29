@@ -1,18 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { dutyPeriodsService, DutyPeriod, DutyPeriodDto } from "@/lib/api/duty-periods";
 import { logsheetsService } from "@/lib/api/logsheets";
 import CustomFormField, { FormFieldType } from "@/components/CustomFormField";
+import PeriodCoordinatePicker from "./PeriodCoordinatePicker";
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
+import type { Resolver } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SelectItem } from "@/components/ui/select";
 import { toast } from "sonner";
 import FmcsaGrid from "./FmcsaGrid";
+import TripMap from "@/components/map/TripMap";
 
 const SummaryValidation = z.object({
   total_off_duty_time: z.string(),
@@ -56,6 +59,58 @@ export function ManageLogSheet({ tripId, logSheetId }: { tripId: number; logShee
       violation_notes: "",
     },
   });
+  // Stable function that always operates on the provided list to avoid effect loops
+  const recalcFrom = useCallback((list: DutyPeriod[]) => {
+    const minutesByStatus: Record<string, number> = {
+      off_duty: 0,
+      sleeper_berth: 0,
+      driving: 0,
+      on_duty: 0,
+    };
+
+    if (!list || list.length === 0) {
+      setPendingSummary({
+        total_off_duty_time: "0",
+        total_sleeper_berth_time: "0",
+        total_driving_time: "0",
+        total_on_duty_time: "0",
+        total_duty_time: "0",
+        hos_violation: false,
+      });
+      toast.info("No duty periods yet. Totals reset to 0.");
+      return;
+    }
+
+    list.forEach((p) => {
+      minutesByStatus[p.duty_status] += p.duration_minutes;
+    });
+
+    const toHoursStr = (m: number) => (m / 60).toFixed(2);
+    const drivingHrs = minutesByStatus.driving / 60;
+    const onDutyHrs = (minutesByStatus.driving + minutesByStatus.on_duty) / 60;
+
+    const hasHosViolation = drivingHrs > 11 || onDutyHrs > 14;
+    const violation_note = hasHosViolation
+      ? `Auto-flagged HOS violation: driving=${drivingHrs.toFixed(2)}h, duty=${onDutyHrs.toFixed(2)}h`
+      : undefined;
+
+    setPendingSummary({
+      total_off_duty_time: toHoursStr(minutesByStatus.off_duty),
+      total_sleeper_berth_time: toHoursStr(minutesByStatus.sleeper_berth),
+      total_driving_time: toHoursStr(minutesByStatus.driving),
+      total_on_duty_time: toHoursStr(minutesByStatus.on_duty),
+      total_duty_time: toHoursStr(minutesByStatus.driving + minutesByStatus.on_duty),
+      hos_violation: hasHosViolation,
+      violation_note,
+    });
+
+    if (hasHosViolation) {
+      toast.warning("HOS violation detected from periods.");
+    } else {
+      toast.success("Summary recalculated from periods.");
+    }
+  }, []);
+
   useEffect(() => {
     async function load() {
       try {
@@ -63,9 +118,9 @@ export function ManageLogSheet({ tripId, logSheetId }: { tripId: number; logShee
         const [periodList] = await Promise.all([
           dutyPeriodsService.listByLogSheet(logSheetId),
         ]);
-  setPeriods(periodList.results);
-  setError(null);
-  recalcSummary(periodList.results);
+        setPeriods(periodList.results);
+        setError(null);
+        recalcFrom(periodList.results);
       } catch {
         setError("Failed to load log sheet details");
       } finally {
@@ -73,7 +128,7 @@ export function ManageLogSheet({ tripId, logSheetId }: { tripId: number; logShee
       }
     }
     load();
-  }, [logSheetId]);
+  }, [logSheetId, recalcFrom]);
 
 
 
@@ -99,7 +154,7 @@ export function ManageLogSheet({ tripId, logSheetId }: { tripId: number; logShee
       const created = await dutyPeriodsService.create(payload);
       setPeriods((prev) => {
         const next = [...prev, created];
-        recalcSummary(next);
+        recalcFrom(next);
         return next;
       });
       return;
@@ -146,64 +201,13 @@ export function ManageLogSheet({ tripId, logSheetId }: { tripId: number; logShee
     const created2 = await dutyPeriodsService.create(second);
     setPeriods((prev) => {
       const next = [...prev, created1, created2];
-      recalcSummary(next);
+      recalcFrom(next);
       return next;
     });
     toast.info("Period crossed midnight and was split into two entries.");
   };
 
-  const recalcSummary = (list?: DutyPeriod[]) => {
-    const minutesByStatus: Record<string, number> = {
-      off_duty: 0,
-      sleeper_berth: 0,
-      driving: 0,
-      on_duty: 0,
-    };
 
-    const source = list ?? periods;
-
-    if (!source || source.length === 0) {
-      setPendingSummary({
-        total_off_duty_time: "0",
-        total_sleeper_berth_time: "0",
-        total_driving_time: "0",
-        total_on_duty_time: "0",
-        total_duty_time: "0",
-        hos_violation: false,
-      });
-      toast.info("No duty periods yet. Totals reset to 0.");
-      return;
-    }
-
-    source.forEach((p) => {
-      minutesByStatus[p.duty_status] += p.duration_minutes;
-    });
-
-    const toHoursStr = (m: number) => (m / 60).toFixed(2);
-    const drivingHrs = minutesByStatus.driving / 60;
-    const onDutyHrs = (minutesByStatus.driving + minutesByStatus.on_duty) / 60;
-
-    const hasHosViolation = drivingHrs > 11 || onDutyHrs > 14;
-    const violation_note = hasHosViolation
-      ? `Auto-flagged HOS violation: driving=${drivingHrs.toFixed(2)}h, duty=${onDutyHrs.toFixed(2)}h`
-      : undefined;
-
-    setPendingSummary({
-      total_off_duty_time: toHoursStr(minutesByStatus.off_duty),
-      total_sleeper_berth_time: toHoursStr(minutesByStatus.sleeper_berth),
-      total_driving_time: toHoursStr(minutesByStatus.driving),
-      total_on_duty_time: toHoursStr(minutesByStatus.on_duty),
-      total_duty_time: toHoursStr(minutesByStatus.driving + minutesByStatus.on_duty),
-      hos_violation: hasHosViolation,
-      violation_note,
-    });
-
-    if (hasHosViolation) {
-      toast.warning("HOS violation detected from periods.");
-    } else {
-      toast.success("Summary recalculated from periods.");
-    }
-  };
 
   useEffect(() => {
     if (!pendingSummary) return;
@@ -269,7 +273,7 @@ export function ManageLogSheet({ tripId, logSheetId }: { tripId: number; logShee
       });
       setPeriods((prev) => {
         const next = prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p));
-        recalcSummary(next);
+        recalcFrom(next);
         return next;
       });
       toast.success("Updated period on grid");
@@ -283,7 +287,7 @@ export function ManageLogSheet({ tripId, logSheetId }: { tripId: number; logShee
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-2xl font-bold">Manage Log Sheet</h2>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => recalcSummary()} disabled={periods.length === 0}>Recalculate from Periods</Button>
+          <Button variant="outline" onClick={() => recalcFrom(periods)} disabled={periods.length === 0}>Recalculate from Periods</Button>
           <Button onClick={form.handleSubmit(saveSummary)}>Save Summary</Button>
         </div>
       </div>
@@ -302,6 +306,31 @@ export function ManageLogSheet({ tripId, logSheetId }: { tripId: number; logShee
           }))}
           onResize={handleResize}
         />
+        {/* Day-level route visualization (if coordinates exist) */}
+        {periods.some(p => p.start_latitude && p.start_longitude && p.end_latitude && p.end_longitude) && (
+          <div className="mt-4">
+            <h4 className="text-sm font-medium mb-2">Day Route</h4>
+            <TripMap
+              route={periods
+                .filter(p => p.duty_status === 'driving' && p.start_latitude && p.start_longitude && p.end_latitude && p.end_longitude)
+                .flatMap(p => ([
+                  { lat: Number(p.start_latitude), lng: Number(p.start_longitude) },
+                  { lat: Number(p.end_latitude), lng: Number(p.end_longitude) },
+                ]))}
+              stops={periods
+                .filter(p => p.duty_status === 'on_duty' || p.duty_status === 'off_duty')
+                .map((p) => ({
+                  position: p.start_latitude && p.start_longitude
+                    ? { lat: Number(p.start_latitude), lng: Number(p.start_longitude) }
+                    : undefined,
+                  title: p.duty_status === 'on_duty' ? 'On Duty' : 'Off Duty',
+                  note: new Date(p.start_time).toLocaleTimeString(),
+                }))
+                .filter((s) => s.position !== undefined) as { position: { lat: number; lng: number }, title: string, note?: string }[]}
+              height={260}
+            />
+          </div>
+        )}
       </section>
 
       {loading ? (
@@ -332,7 +361,7 @@ export function ManageLogSheet({ tripId, logSheetId }: { tripId: number; logShee
                         .then(() =>
                           setPeriods((prev) => {
                             const next = prev.filter((x) => x.id !== p.id);
-                            recalcSummary(next);
+                            recalcFrom(next);
                             return next;
                           }),
                         )
@@ -393,9 +422,14 @@ function QuickAddDutyPeriod({ onAdd }: { onAdd: (data: Omit<DutyPeriodDto, "log_
     state: z.string().length(2),
     activity_description: z.string().min(1),
     vehicle_moved: z.boolean(),
+    start_latitude: z.coerce.number().optional(),
+    start_longitude: z.coerce.number().optional(),
+    end_latitude: z.coerce.number().optional(),
+    end_longitude: z.coerce.number().optional(),
   });
-  const form = useForm<z.infer<typeof schema>>({
-    resolver: zodResolver(schema),
+  type QuickAddValues = z.infer<typeof schema>;
+  const form = useForm<QuickAddValues>({
+    resolver: zodResolver(schema) as unknown as Resolver<QuickAddValues>,
     defaultValues: {
       duty_status: "on_duty",
       start_time: new Date(),
@@ -405,6 +439,10 @@ function QuickAddDutyPeriod({ onAdd }: { onAdd: (data: Omit<DutyPeriodDto, "log_
       state: "",
       activity_description: "",
       vehicle_moved: true,
+      start_latitude: undefined,
+      start_longitude: undefined,
+      end_latitude: undefined,
+      end_longitude: undefined,
     },
   });
 
@@ -429,6 +467,10 @@ function QuickAddDutyPeriod({ onAdd }: { onAdd: (data: Omit<DutyPeriodDto, "log_
       vehicle_moved: v.vehicle_moved,
       grid_start_minute: startMin,
       grid_end_minute: endMin,
+      start_latitude: Number.isFinite(v.start_latitude as number) ? (v.start_latitude as number) : undefined,
+      start_longitude: Number.isFinite(v.start_longitude as number) ? (v.start_longitude as number) : undefined,
+      end_latitude: Number.isFinite(v.end_latitude as number) ? (v.end_latitude as number) : undefined,
+      end_longitude: Number.isFinite(v.end_longitude as number) ? (v.end_longitude as number) : undefined,
     });
     form.reset();
   };
@@ -453,6 +495,42 @@ function QuickAddDutyPeriod({ onAdd }: { onAdd: (data: Omit<DutyPeriodDto, "log_
           <CustomFormField fieldType={FormFieldType.INPUT} control={form.control} name="activity_description" label="Activity / Remarks" />
         </div>
         <CustomFormField fieldType={FormFieldType.CHECKBOX} control={form.control} name="vehicle_moved" label="Vehicle Moved" />
+        <div className="col-span-2 grid grid-cols-2 gap-3">
+          <CustomFormField fieldType={FormFieldType.INPUT} control={form.control} name="start_latitude" label="Start Lat" type="number" />
+          <CustomFormField fieldType={FormFieldType.INPUT} control={form.control} name="start_longitude" label="Start Lng" type="number" />
+          <CustomFormField fieldType={FormFieldType.INPUT} control={form.control} name="end_latitude" label="End Lat" type="number" />
+          <CustomFormField fieldType={FormFieldType.INPUT} control={form.control} name="end_longitude" label="End Lng" type="number" />
+        </div>
+        <div className="col-span-2">
+          <PeriodCoordinatePicker
+            start={(() => {
+              const slat = form.getValues("start_latitude") as unknown;
+              const slng = form.getValues("start_longitude") as unknown;
+              const nlat = typeof slat === 'number' ? slat : (typeof slat === 'string' ? Number(slat) : undefined);
+              const nlng = typeof slng === 'number' ? slng : (typeof slng === 'string' ? Number(slng) : undefined);
+              return Number.isFinite(nlat as number) && Number.isFinite(nlng as number)
+                ? { lat: nlat as number, lng: nlng as number }
+                : undefined;
+            })()}
+            end={(() => {
+              const elat = form.getValues("end_latitude") as unknown;
+              const elng = form.getValues("end_longitude") as unknown;
+              const nlat = typeof elat === 'number' ? elat : (typeof elat === 'string' ? Number(elat) : undefined);
+              const nlng = typeof elng === 'number' ? elng : (typeof elng === 'string' ? Number(elng) : undefined);
+              return Number.isFinite(nlat as number) && Number.isFinite(nlng as number)
+                ? { lat: nlat as number, lng: nlng as number }
+                : undefined;
+            })()}
+            onChangeStart={(p) => {
+              form.setValue("start_latitude", p?.lat ?? undefined, { shouldDirty: true });
+              form.setValue("start_longitude", p?.lng ?? undefined, { shouldDirty: true });
+            }}
+            onChangeEnd={(p) => {
+              form.setValue("end_latitude", p?.lat ?? undefined, { shouldDirty: true });
+              form.setValue("end_longitude", p?.lng ?? undefined, { shouldDirty: true });
+            }}
+          />
+        </div>
         <div className="col-span-2">
           <Button type="submit">Add Period</Button>
         </div>
