@@ -52,16 +52,10 @@ interface CustomProps {
   colSpan?: number;
   comboboxOptions?: ComboBoxOption[];
   optionsName?: string;
+  type?: string; // Add type prop for input type (e.g., 'number')
 }
 
-const RenderInput = ({
-  field,
-
-  props,
-}: {
-  field: any;
-  props: CustomProps;
-}) => {
+const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
   const Icon = props.icon;
   const comboboxOptions = props.comboboxOptions || [];
   switch (props.fieldType) {
@@ -74,6 +68,7 @@ const RenderInput = ({
               placeholder={props.placeholder}
               {...field}
               className="shad-input border-0"
+              type={props.type || "text"}
             />
           </FormControl>
         </div>
@@ -127,7 +122,7 @@ const RenderInput = ({
             <ReactDatePicker
               showTimeSelect={props.showTimeSelect ?? false}
               selected={field.value}
-              onChange={(date: Date) => field.onChange(date)}
+              onChange={(date: Date | null) => field.onChange(date)}
               timeInputLabel="Time:"
               dateFormat={props.dateFormat ?? "MM/dd/yyyy"}
               wrapperClassName="date-picker"

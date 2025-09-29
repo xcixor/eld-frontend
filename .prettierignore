@@ -1,0 +1,10 @@
+build/
+coverage/
+node_modules/
+.next/
+dist/
+.circleci/
+public/
+scripts/
+package-lock.json
+pnpm-lock.yaml

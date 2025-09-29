@@ -28,7 +28,8 @@ import CustomFormField, { FormFieldType } from "../CustomFormField";
 import SubmitButton from "@/components/submit-button";
 import { RegistrationFormValidation } from "@/lib/validation";
 import { Eye, EyeOff } from "lucide-react";
-import { authService, ValidationError } from "@/lib/api/auth";
+import { authService } from "@/lib/api/auth";
+import { ValidationError } from "@/types/api";
 
 type SignupProps = {
   className?: string;
@@ -60,9 +61,6 @@ export function RegistrationForm({
   const [isLoading, setIsLoading] = useState(false);
 
   const [isPasswordHidden, setIsPasswordHidden] = useState(true);
-
-
-
 
   const toggleIsPasswordHidden = () =>
     setIsPasswordHidden((current) => !current);
@@ -111,26 +109,24 @@ export function RegistrationForm({
 
         if (response.status_code === 201) {
           toast("Signup successful! Please signin.");
-          router.push("/auth/login");
+          router.push("/dashboard");
         } else {
           toast("Signup failed. Please try again.");
         }
       } catch (error) {
-
-        // Handle validation errors with field-specific messages
-        if (error instanceof Error && 'fieldErrors' in error) {
+        if (error instanceof Error && "fieldErrors" in error) {
           const validationError = error as ValidationError;
 
-          // Handle non-field errors (show as toast)
-          if (validationError.nonFieldErrors && validationError.nonFieldErrors.length > 0) {
-            validationError.nonFieldErrors.forEach(errorMessage => {
+          if (
+            validationError.nonFieldErrors &&
+            validationError.nonFieldErrors.length > 0
+          ) {
+            validationError.nonFieldErrors.forEach((errorMessage) => {
               toast.error(errorMessage);
             });
           }
 
-          // Handle field-specific errors (show below fields)
           if (validationError.fieldErrors) {
-            // Set server errors on form fields
             Object.keys(validationError.fieldErrors).forEach((fieldName) => {
               const fieldErrors = validationError.fieldErrors![fieldName];
               if (fieldErrors && fieldErrors.length > 0) {
@@ -142,8 +138,10 @@ export function RegistrationForm({
             });
           }
 
-          // Show generic message if there are field errors
-          if (validationError.fieldErrors && Object.keys(validationError.fieldErrors).length > 0) {
+          if (
+            validationError.fieldErrors &&
+            Object.keys(validationError.fieldErrors).length > 0
+          ) {
             toast("Please fix the errors below");
           }
         } else {
@@ -170,7 +168,7 @@ export function RegistrationForm({
 
           <CardDescription className="text-dark-600">
             Signup below or{" "}
-            <Link href="/auth/login" className="underline">
+            <Link href="/" className="underline">
               signin
             </Link>
           </CardDescription>
@@ -198,12 +196,12 @@ export function RegistrationForm({
                 </div>
 
                 <CustomFormField
-                    fieldType={FormFieldType.INPUT}
-                    control={form.control}
-                    name="email"
-                    label="Email"
-                    placeholder="example@mail.com"
-                  />
+                  fieldType={FormFieldType.INPUT}
+                  control={form.control}
+                  name="email"
+                  label="Email"
+                  placeholder="example@mail.com"
+                />
 
                 <FormField
                   control={form.control}

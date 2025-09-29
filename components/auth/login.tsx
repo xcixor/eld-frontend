@@ -28,18 +28,16 @@ import CustomFormField, { FormFieldType } from "../CustomFormField";
 import SubmitButton from "@/components/submit-button";
 import { LoginFormValidation } from "@/lib/validation";
 import { Eye, EyeOff } from "lucide-react";
-import { authService } from "@/lib/api/auth";
+
+import { signIn } from "next-auth/react";
 
 type LoginProps = {
   className?: string;
   defaultValues?: Partial<z.infer<typeof LoginFormValidation>>;
+  callbackUrl?: string;
 };
 
-export function LoginForm({
-  className,
-  defaultValues,
-  ...props
-}: LoginProps) {
+export function LoginForm({ className, defaultValues, ...props }: LoginProps) {
   const form = useForm<z.infer<typeof LoginFormValidation>>({
     resolver: zodResolver(LoginFormValidation),
     defaultValues: {
@@ -58,38 +56,35 @@ export function LoginForm({
 
   const router = useRouter();
 
-  const onSubmit = async (
-    values: z.infer<typeof LoginFormValidation>,
-  ) => {
+  const onSubmit = async (values: z.infer<typeof LoginFormValidation>) => {
     const { username, password } = values;
 
-    if (isValid) {
-      setIsLoading(true);
-      try {
-        const response = await authService.login({
-          username,
-          password,
-        });
+    if (!isValid) return;
 
-        if (response.status_code === 200) {
-          toast("Login successful!");
-          // Store token if needed
-          if (response.token) {
-            localStorage.setItem('auth_token', response.token);
-          }
-          router.push("/dashboard");
-        } else {
-          toast("Login failed. Please try again.");
-        }
-      } catch (error) {
-        if (error instanceof Error) {
-          toast.error(error.message);
-        } else {
-          toast.error("Login failed. Please check your credentials.");
-        }
-      } finally {
-        setIsLoading(false);
+    setIsLoading(true);
+    try {
+      const res = await signIn("credentials", {
+        username,
+        password,
+        redirect: false,
+        callbackUrl: props.callbackUrl ?? "/dashboard",
+      });
+
+      if (res?.error) {
+        toast.error("Invalid credentials");
+        return;
       }
+
+      const target = res?.url ?? props.callbackUrl ?? "/dashboard";
+      router.push(target);
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error("Login failed. Please check your credentials.");
+      } else {
+        toast.error("Login failed. Please check your credentials.");
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -108,7 +103,7 @@ export function LoginForm({
 
           <CardDescription className="text-dark-600">
             Sign in below or{" "}
-            <Link href="/auth/register" className="underline">
+            <Link href="/register" className="underline">
               create an account
             </Link>
           </CardDescription>
@@ -159,9 +154,7 @@ export function LoginForm({
                   )}
                 />
 
-                <SubmitButton isLoading={isLoading}>
-                  Sign In
-                </SubmitButton>
+                <SubmitButton isLoading={isLoading}>Sign In</SubmitButton>
               </div>
             </form>
           </Form>

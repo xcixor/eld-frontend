@@ -20,7 +20,7 @@ class AxiosClient {
           this.token = await this.getToken();
         }
         if (this.token) {
-          config.headers.Authorization = `Bearer ${this.token}`;
+          config.headers.Authorization = `Token ${this.token}`;
         }
 
         return config;
@@ -38,7 +38,7 @@ class AxiosClient {
 
   async getToken(): Promise<string> {
     const session = await getSession();
-    const token = session?.user?.token as string;
+    const token = session?.token as string;
     return token;
   }
 }

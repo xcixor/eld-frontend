@@ -1,4 +1,5 @@
 import { authService } from "@/lib/api/auth";
+import { DriverInfo, LoginUser } from "@/types/next-auth";
 import type { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
@@ -21,18 +22,40 @@ export const options = {
             password: credentials.password,
           });
 
+          console.log("Login response:", loginResponse);
+
+          if (!loginResponse.token) {
+            console.error("No token received in login response");
+            return null;
+          }
+
           return {
-            id: loginResponse.user.id.toString(),
-            username: loginResponse.user.username,
-            email: loginResponse.user.email,
-            first_name: loginResponse.user.first_name,
-            last_name: loginResponse.user.last_name,
-            driver_number: "",
-            initials: "",
-            home_operating_center: "",
-            license_number: "",
-            license_state: "",
-            token: loginResponse.token,
+            user: {
+              id: loginResponse.user?.id?.toString() ?? "",
+              username: loginResponse.user?.username ?? "",
+              first_name: loginResponse.user?.first_name ?? "",
+              last_name: loginResponse.user?.last_name ?? "",
+            },
+            driver: loginResponse.driver
+              ? {
+                  id: loginResponse.driver?.id?.toString() ?? "",
+                  driver_number: loginResponse.driver?.driver_number ?? "",
+                  initials: loginResponse.driver?.initials ?? "",
+                  home_operating_center:
+                    loginResponse.driver?.home_operating_center ?? "",
+                  license_number: loginResponse.driver?.license_number ?? "",
+                  license_state: loginResponse.driver?.license_state ?? "",
+                }
+              : {
+                  id: "",
+                  driver_number: "",
+                  initials: "",
+                  home_operating_center: "",
+                  license_number: "",
+                  license_state: "",
+                },
+            token: loginResponse.token ?? "",
+            expires: loginResponse.expires ?? undefined,
           };
         } catch (error) {
           console.error("Authentication error:", error);
@@ -54,41 +77,27 @@ export const options = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.username = user.username;
-        token.email = user.email;
-        token.first_name = user.first_name;
-        token.last_name = user.last_name;
-        token.driver_number = user.driver_number;
-        token.initials = user.initials;
-        token.home_operating_center = user.home_operating_center;
-        token.license_number = user.license_number;
-        token.license_state = user.license_state;
-        token.apiToken = user.token;
+        token.user = user.user;
+        token.driver = user.driver;
+        token.token = user.token;
+        token.expires = user.expires;
       }
       return token;
     },
     async session({ session, token }) {
       if (token) {
-        session.user.username = token.username as string;
-        session.user.email = token.email as string;
-        session.user.first_name = token.first_name as string;
-        session.user.last_name = token.last_name as string;
-        session.user.driver_number = token.driver_number as string;
-        session.user.initials = token.initials as string;
-        session.user.home_operating_center =
-          token.home_operating_center as string;
-        session.user.license_number = token.license_number as string;
-        session.user.license_state = token.license_state as string;
-        session.user.token = token.apiToken as string;
+        session.user = token.user as LoginUser;
+        session.driver = token.driver as DriverInfo;
+        session.token = token.token as string;
+        session.expires = token.expires as string | undefined;
       }
       return session;
     },
   },
 
   pages: {
-    signIn: "/auth/signin",
-    error: `/auth/error?callBackUrl=/auth/signin`,
+    signIn: "/",
+    error: `/auth/error?callBackUrl=/`,
   },
 
   secret: process.env.NEXTAUTH_SECRET,
