@@ -65,7 +65,6 @@ export function ManageLogSheet({ tripId, logSheetId }: { tripId: number; logShee
         ]);
   setPeriods(periodList.results);
   setError(null);
-  // Recalculate summary after loading periods
   recalcSummary(periodList.results);
       } catch {
         setError("Failed to load log sheet details");
