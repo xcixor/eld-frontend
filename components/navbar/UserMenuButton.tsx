@@ -29,7 +29,7 @@ export default function UserMenuButton({
     <>
       {user ? (
         <DropdownMenu>
-          <DropdownMenuTrigger className="border-transparent focus:border-transparent focus:ring-0 focus:outline-none">
+          <DropdownMenuTrigger className="border-transparent cursor-pointer focus:border-transparent focus:ring-0 focus:outline-none">
             <div className="flex items-center">
               <Avatar>
                 <AvatarImage src={avatarUrl} />
@@ -51,9 +51,10 @@ export default function UserMenuButton({
             <Button
               size="sm"
               variant="default"
+              className="cursor-pointer"
               onClick={() => signOut({ callbackUrl: "/" })}
             >
-              <LogOut className="mr-2 size-4" /> SignOut
+              <LogOut className="mr-2 size-4" /> Sign Out
             </Button>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -61,10 +62,10 @@ export default function UserMenuButton({
         <Button
           size="sm"
           variant="default"
-          className="bg-primary focus-within:ring-transparent"
+          className="bg-primary focus-within:ring-transparent cursor-pointer"
           onClick={() => signIn()}
         >
-          <LogIn className="mr-2 size-4" /> SignIn
+          <LogIn className="mr-2 size-4" /> Sign In
         </Button>
       )}
     </>
