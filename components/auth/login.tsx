@@ -94,7 +94,7 @@ export function LoginForm({ className, defaultValues, ...props }: LoginProps) {
           </CardTitle>
 
           <CardDescription className="text-dark-600">
-            Sign in below or
+            Sign in below or{" "}
             <Link href="/register" className="underline">
               create an account
             </Link>

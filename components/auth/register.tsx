@@ -109,7 +109,7 @@ export function RegistrationForm({
 
         if (response.status_code === 201) {
           toast("Signup successful! Please signin.");
-          router.push("/auth/login");
+          router.push("/dashboard");
         } else {
           toast("Signup failed. Please try again.");
         }
