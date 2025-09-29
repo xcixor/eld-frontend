@@ -4,6 +4,12 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
   dutyPeriodsService,
   DutyPeriod,
   DutyPeriodDto,
@@ -66,6 +72,21 @@ export function ManageLogSheet({
       violation_notes: "",
     },
   });
+
+  const prettyDutyStatus = useCallback((s: string) => {
+    switch (s) {
+      case "off_duty":
+        return "Off Duty";
+      case "sleeper_berth":
+        return "Sleeper Berth";
+      case "driving":
+        return "Driving";
+      case "on_duty":
+        return "On Duty";
+      default:
+        return s;
+    }
+  }, []);
   // Stable function that always operates on the provided list to avoid effect loops
   const recalcFrom = useCallback((list: DutyPeriod[]) => {
     const minutesByStatus: Record<string, number> = {
@@ -308,7 +329,7 @@ export function ManageLogSheet({
   };
 
   return (
-    <div className="mx-auto max-w-5xl p-6">
+    <div className="space-y-2">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-2xl font-bold">Manage Log Sheet</h2>
         <div className="flex gap-2">
@@ -323,197 +344,220 @@ export function ManageLogSheet({
         </div>
       </div>
 
-      <section className="lg:col-span-2">
-        <h3 className="mb-2 text-lg font-semibold">Your Daily Log</h3>
-        <div className="mb-2 text-xs text-gray-600">
-          <strong>Tip:</strong> The grid below is interactive. Drag the ends of
-          a segment to adjust its time. Hover for details.
-        </div>
-        <FmcsaGrid
-          periods={periods.map((p) => ({
-            id: p.id,
-            duty_status: p.duty_status,
-            grid_start_minute: p.grid_start_minute,
-            grid_end_minute: p.grid_end_minute,
-          }))}
-          onResize={handleResize}
-        />
-        {/* Day-level route visualization (if coordinates exist) */}
-        {periods.some(
-          (p) =>
-            p.start_latitude &&
-            p.start_longitude &&
-            p.end_latitude &&
-            p.end_longitude,
-        ) && (
-          <div className="mt-4">
-            <h4 className="mb-2 text-sm font-medium">Day Route</h4>
-            <TripMap
-              route={periods
-                .filter(
-                  (p) =>
-                    p.duty_status === "driving" &&
-                    p.start_latitude &&
-                    p.start_longitude &&
-                    p.end_latitude &&
-                    p.end_longitude,
-                )
-                .flatMap((p) => [
-                  {
-                    lat: Number(p.start_latitude),
-                    lng: Number(p.start_longitude),
-                  },
-                  { lat: Number(p.end_latitude), lng: Number(p.end_longitude) },
-                ])}
-              stops={
-                periods
+      <Card className="lg:col-span-2">
+        <CardHeader>
+          <CardTitle>Your Daily Log</CardTitle>
+          <div className="text-muted-foreground text-xs">
+            <strong>Tip:</strong> The grid below is interactive. Drag the ends
+            of a segment to adjust its time. Hover for details.
+          </div>
+        </CardHeader>
+        <CardContent>
+          <FmcsaGrid
+            periods={periods.map((p) => ({
+              id: p.id,
+              duty_status: p.duty_status,
+              grid_start_minute: p.grid_start_minute,
+              grid_end_minute: p.grid_end_minute,
+            }))}
+            onResize={handleResize}
+          />
+          {periods.some(
+            (p) =>
+              p.start_latitude &&
+              p.start_longitude &&
+              p.end_latitude &&
+              p.end_longitude,
+          ) && (
+            <div className="mt-4">
+              <h4 className="mb-2 text-sm font-medium">Day Route</h4>
+              <TripMap
+                route={periods
                   .filter(
                     (p) =>
-                      p.duty_status === "on_duty" ||
-                      p.duty_status === "off_duty",
+                      p.duty_status === "driving" &&
+                      p.start_latitude &&
+                      p.start_longitude &&
+                      p.end_latitude &&
+                      p.end_longitude,
                   )
-                  .map((p) => ({
-                    position:
-                      p.start_latitude && p.start_longitude
-                        ? {
-                            lat: Number(p.start_latitude),
-                            lng: Number(p.start_longitude),
-                          }
-                        : undefined,
-                    title: p.duty_status === "on_duty" ? "On Duty" : "Off Duty",
-                    note: new Date(p.start_time).toLocaleTimeString(),
-                  }))
-                  .filter((s) => s.position !== undefined) as {
-                  position: { lat: number; lng: number };
-                  title: string;
-                  note?: string;
-                }[]
-              }
-              height={260}
-            />
-          </div>
-        )}
-      </section>
+                  .flatMap((p) => [
+                    {
+                      lat: Number(p.start_latitude),
+                      lng: Number(p.start_longitude),
+                    },
+                    { lat: Number(p.end_latitude), lng: Number(p.end_longitude) },
+                  ])}
+                stops={
+                  periods
+                    .filter(
+                      (p) =>
+                        p.duty_status === "on_duty" ||
+                        p.duty_status === "off_duty",
+                    )
+                    .map((p) => ({
+                      position:
+                        p.start_latitude && p.start_longitude
+                          ? {
+                              lat: Number(p.start_latitude),
+                              lng: Number(p.start_longitude),
+                            }
+                          : undefined,
+                      title:
+                        p.duty_status === "on_duty" ? "On Duty" : "Off Duty",
+                      note: new Date(p.start_time).toLocaleTimeString(),
+                    }))
+                    .filter((s) => s.position !== undefined) as {
+                    position: { lat: number; lng: number };
+                    title: string;
+                    note?: string;
+                  }[]
+                }
+                height={260}
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {loading ? (
         <p>Loading…</p>
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : (
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-          <section>
-            <h3 className="mb-2 text-lg font-semibold">Duty Periods</h3>
-
-            <ul className="mb-4 divide-y rounded border">
-              {periods.length > 0 &&
-                periods?.map((p) => (
-                  <li
-                    key={p.id}
-                    className="flex items-center justify-between p-3 text-sm"
-                  >
-                    <div>
-                      <div className="font-medium">{p.duty_status}</div>
-                      <div className="text-muted-foreground">
-                        {new Date(p.start_time).toLocaleString()} →{" "}
-                        {new Date(p.end_time).toLocaleString()} • {p.city},{" "}
-                        {p.state}
-                      </div>
-                      <div className="text-muted-foreground">
-                        {p.activity_description}
-                      </div>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() =>
-                        dutyPeriodsService.remove(p.id).then(() =>
-                          setPeriods((prev) => {
-                            const next = prev.filter((x) => x.id !== p.id);
-                            recalcFrom(next);
-                            return next;
-                          }),
-                        )
-                      }
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 items-start">
+          <Card>
+            <CardHeader>
+              <CardTitle>Duty Periods</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="mb-4 divide-y rounded border">
+                {periods.length > 0 &&
+                  periods?.map((p) => (
+                    <li
+                      key={p.id}
+                      className="flex items-center justify-between p-3 text-sm"
                     >
-                      Delete
-                    </Button>
+                      <div>
+                        <div className="font-medium">{prettyDutyStatus(p.duty_status)}</div>
+                        <div className="text-muted-foreground">
+                          {new Date(p.start_time).toLocaleString()} →{" "}
+                          {new Date(p.end_time).toLocaleString()} • {p.city},{" "}
+                          {p.state}
+                        </div>
+                        <div className="text-muted-foreground">
+                          {p.activity_description}
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() =>
+                          dutyPeriodsService.remove(p.id).then(() =>
+                            setPeriods((prev) => {
+                              const next = prev.filter((x) => x.id !== p.id);
+                              recalcFrom(next);
+                              return next;
+                            }),
+                          )
+                        }
+                      >
+                        Delete
+                      </Button>
+                    </li>
+                  ))}
+                {periods.length === 0 && (
+                  <li className="text-muted-foreground p-3 text-sm">
+                    No periods yet.
                   </li>
-                ))}
-              {periods.length === 0 && (
-                <li className="text-muted-foreground p-3 text-sm">
-                  No periods yet.
-                </li>
-              )}
-            </ul>
+                )}
+              </ul>
 
-            <QuickAddDutyPeriod onAdd={addPeriod} />
-          </section>
+              <QuickAddDutyPeriod onAdd={addPeriod} />
+            </CardContent>
+          </Card>
 
-          <section>
-            <h3 className="mb-2 text-lg font-semibold">Summary</h3>
-            <Form {...form}>
-              <form className="grid grid-cols-2 gap-4">
-                <CustomFormField
-                  fieldType={FormFieldType.INPUT}
-                  control={form.control}
-                  name="total_off_duty_time"
-                  label="Off Duty (hrs)"
-                  type="number"
-                />
-                <CustomFormField
-                  fieldType={FormFieldType.INPUT}
-                  control={form.control}
-                  name="total_sleeper_berth_time"
-                  label="Sleeper (hrs)"
-                  type="number"
-                />
-                <CustomFormField
-                  fieldType={FormFieldType.INPUT}
-                  control={form.control}
-                  name="total_driving_time"
-                  label="Driving (hrs)"
-                  type="number"
-                />
-                <CustomFormField
-                  fieldType={FormFieldType.INPUT}
-                  control={form.control}
-                  name="total_on_duty_time"
-                  label="On Duty (hrs)"
-                  type="number"
-                />
-                <CustomFormField
-                  fieldType={FormFieldType.INPUT}
-                  control={form.control}
-                  name="total_duty_time"
-                  label="Duty Total (hrs)"
-                  type="number"
-                />
-                <CustomFormField
-                  fieldType={FormFieldType.INPUT}
-                  control={form.control}
-                  name="miles_driven"
-                  label="Miles Driven"
-                  type="number"
-                />
-                <div className="col-span-2">
-                  <CustomFormField
-                    fieldType={FormFieldType.CHECKBOX}
-                    control={form.control}
-                    name="hos_violation"
-                    label="HOS Violation"
-                  />
-                </div>
-                <div className="col-span-2">
-                  <CustomFormField
-                    fieldType={FormFieldType.TEXTAREA}
-                    control={form.control}
-                    name="violation_notes"
-                    label="Notes"
-                  />
-                </div>
-              </form>
-            </Form>
-          </section>
+          <Card>
+            <CardHeader>
+              <CardTitle>Summary</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
+                <form className="grid grid-cols-6 gap-4">
+                  <div className="col-span-6 sm:col-span-3">
+                    <CustomFormField
+                      fieldType={FormFieldType.INPUT}
+                      control={form.control}
+                      name="total_off_duty_time"
+                      label="Off Duty (hrs)"
+                      type="number"
+                    />
+                  </div>
+                  <div className="col-span-6 sm:col-span-3">
+                    <CustomFormField
+                      fieldType={FormFieldType.INPUT}
+                      control={form.control}
+                      name="total_sleeper_berth_time"
+                      label="Sleeper (hrs)"
+                      type="number"
+                    />
+                  </div>
+                  <div className="col-span-6 sm:col-span-3">
+                    <CustomFormField
+                      fieldType={FormFieldType.INPUT}
+                      control={form.control}
+                      name="total_driving_time"
+                      label="Driving (hrs)"
+                      type="number"
+                    />
+                  </div>
+                  <div className="col-span-6 sm:col-span-3">
+                    <CustomFormField
+                      fieldType={FormFieldType.INPUT}
+                      control={form.control}
+                      name="total_on_duty_time"
+                      label="On Duty (hrs)"
+                      type="number"
+                    />
+                  </div>
+                  <div className="col-span-6 sm:col-span-3">
+                    <CustomFormField
+                      fieldType={FormFieldType.INPUT}
+                      control={form.control}
+                      name="total_duty_time"
+                      label="Duty Total (hrs)"
+                      type="number"
+                    />
+                  </div>
+                  <div className="col-span-6 sm:col-span-3">
+                    <CustomFormField
+                      fieldType={FormFieldType.INPUT}
+                      control={form.control}
+                      name="miles_driven"
+                      label="Miles Driven"
+                      type="number"
+                    />
+                  </div>
+                  <div className="col-span-6">
+                    <CustomFormField
+                      fieldType={FormFieldType.CHECKBOX}
+                      control={form.control}
+                      name="hos_violation"
+                      label="HOS Violation"
+                    />
+                  </div>
+                  <div className="col-span-6">
+                    <CustomFormField
+                      fieldType={FormFieldType.TEXTAREA}
+                      control={form.control}
+                      name="violation_notes"
+                      label="Notes"
+                    />
+                  </div>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>
