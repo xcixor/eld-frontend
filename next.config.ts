@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-const path = require("path");
+import * as path from "node:path";
 
 const nextConfig: NextConfig = {
   /* config options here */
