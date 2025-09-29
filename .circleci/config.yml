@@ -29,6 +29,10 @@ jobs:
       - run: prepare-gcloud
       - setup_env_file
       - run:
+          name: Configure Docker for Artifact Registry
+          command: |
+            gcloud auth configure-docker us-east1-docker.pkg.dev
+      - run:
           name: Build Tag and Push eld-frontend Docker Image
           command: |
             docker-build -f deploy/build.config
@@ -49,7 +53,7 @@ jobs:
       - checkout
       - cloudrun/init
       - cloudrun/deploy:
-          image: "gcr.io/${GOOGLE_PROJECT_ID}/eld-frontend:${CIRCLE_SHA1}"
+          image: "us-east1-docker.pkg.dev/${GOOGLE_PROJECT_ID}/eld-frontend/frontend:${CIRCLE_SHA1}"
           platform: managed
           region: us-east1
           service-name: eld-frontend-<< parameters.environment >>
