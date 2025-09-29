@@ -59,24 +59,32 @@ export function LoginForm({ className, defaultValues, ...props }: LoginProps) {
   const onSubmit = async (values: z.infer<typeof LoginFormValidation>) => {
     const { username, password } = values;
 
-    if (isValid) {
-      setIsLoading(true);
-      try {
-        await signIn("credentials", {
-          username,
-          password,
-          redirect: true,
-          callbackUrl: props.callbackUrl ?? "/dashboard",
-        });
-      } catch (error) {
-        if (error instanceof Error) {
-          toast.error(error.message);
-        } else {
-          toast.error("Login failed. Please check your credentials.");
-        }
-      } finally {
-        setIsLoading(false);
+    if (!isValid) return;
+
+    setIsLoading(true);
+    try {
+      const res = await signIn("credentials", {
+        username,
+        password,
+        redirect: false,
+        callbackUrl: props.callbackUrl ?? "/dashboard",
+      });
+
+      if (res?.error) {
+        toast.error("Invalid credentials");
+        return;
       }
+
+      const target = res?.url ?? props.callbackUrl ?? "/dashboard";
+      router.push(target);
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error("Login failed. Please check your credentials.");
+      } else {
+        toast.error("Login failed. Please check your credentials.");
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
