@@ -1,7 +1,7 @@
 import { DriverInfo, LoginUser } from "@/types/next-auth";
 import AxiosClient from "../client";
 import { AxiosError } from "axios";
-import { ApiError,ValidationError } from "@/types/api";
+import { ApiError, ValidationError } from "@/types/api";
 export interface LoginDto {
   username: string;
   password: string;
@@ -25,12 +25,9 @@ export interface AuthResponse {
   status_code: number;
   user: LoginUser;
   driver: DriverInfo;
-    token: string;
-    expires?: string;
+  token: string;
+  expires?: string;
 }
-
-
-
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_BASE_API_URL || "http://127.0.0.1:8000";

@@ -15,11 +15,12 @@ const CreateTripValidation = z.object({
   pickup_location: z.string().min(1, "Pickup location is required"),
   dropoff_location: z.string().min(1, "Dropoff location is required"),
   current_location: z.string().min(1, "Current location is required"),
-  current_cycle_used_hours: z.coerce.number()
+  current_cycle_used_hours: z.coerce
+    .number()
     .min(0, "Hours cannot be negative")
     .max(70, "Hours cannot exceed 70")
     .transform((v) => Number(v) || 0),
-  driver : z.string().optional(),
+  driver: z.string().optional(),
   truck_id: z.string().min(1, "Truck ID is required"),
   current_lat: z.number().optional(),
   current_lng: z.number().optional(),
@@ -60,8 +61,8 @@ export default function CreateTripForm({
   const { errors } = form.formState;
   const router = useRouter();
 
-  const onSubmit = async  (values: CreateTripFormValues) => {
-     if (!driver) return;
+  const onSubmit = async (values: CreateTripFormValues) => {
+    if (!driver) return;
     setCreating(true);
     try {
       const trip = await tripService.createTrip({
@@ -122,7 +123,6 @@ export default function CreateTripForm({
     }
   };
 
-
   return (
     <Form {...form}>
       {Object.keys(errors).length > 0 && (
@@ -168,8 +168,6 @@ export default function CreateTripForm({
           fieldType={FormFieldType.COMBOBOX}
           comboboxOptions={vehicleOptions || []}
         />
-
-
 
         <SubmitButton isLoading={!!loading || form.formState.isSubmitting}>
           Create Trip

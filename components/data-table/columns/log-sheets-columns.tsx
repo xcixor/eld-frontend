@@ -55,7 +55,15 @@ export function useLogSheetsColumns(tripId: string) {
       id: "actions",
       header: "Actions",
       cell: ({ row }) => (
-        <Button size="sm" variant="outline" onClick={() => router.push(`/dashboard/trip/${tripId}/edit-logsheet/${row.original.id}`)}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() =>
+            router.push(
+              `/dashboard/trip/${tripId}/edit-logsheet/${row.original.id}`,
+            )
+          }
+        >
           Edit
         </Button>
       ),

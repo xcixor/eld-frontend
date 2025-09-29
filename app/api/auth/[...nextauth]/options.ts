@@ -41,7 +41,8 @@ export const options = {
                   id: loginResponse.driver?.id?.toString() ?? "",
                   driver_number: loginResponse.driver?.driver_number ?? "",
                   initials: loginResponse.driver?.initials ?? "",
-                  home_operating_center: loginResponse.driver?.home_operating_center ?? "",
+                  home_operating_center:
+                    loginResponse.driver?.home_operating_center ?? "",
                   license_number: loginResponse.driver?.license_number ?? "",
                   license_state: loginResponse.driver?.license_state ?? "",
                 }

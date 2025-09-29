@@ -16,22 +16,19 @@ export interface Vehicle {
 }
 
 export interface VehiclesResponse {
-    status_code: number;
-    count: number;
-    next: string | null;
-    previous: string | null;
-    results: Vehicle[];
-    error?: string;
+  status_code: number;
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Vehicle[];
+  error?: string;
 }
-
 
 export const vehiclesService = {
   getVehicles: async (): Promise<VehiclesResponse> => {
     try {
-      const response = await vehiclesClient.getInstance().get(
-        `/api/vehicles/`
-      );
-       return {
+      const response = await vehiclesClient.getInstance().get(`/api/vehicles/`);
+      return {
         ...response.data,
         status_code: response.status,
       };
@@ -40,4 +37,4 @@ export const vehiclesService = {
       throw new Error("Failed to fetch vehicles.");
     }
   },
-}
+};

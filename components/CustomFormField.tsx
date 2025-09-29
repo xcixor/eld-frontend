@@ -55,13 +55,7 @@ interface CustomProps {
   type?: string; // Add type prop for input type (e.g., 'number')
 }
 
-const RenderInput = ({
-  field,
-  props,
-}: {
-  field: any;
-  props: CustomProps;
-}) => {
+const RenderInput = ({ field, props }: { field: any; props: CustomProps }) => {
   const Icon = props.icon;
   const comboboxOptions = props.comboboxOptions || [];
   switch (props.fieldType) {

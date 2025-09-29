@@ -27,21 +27,32 @@ export interface LogSheetMinimalCreateDto {
 
 export const logsheetsService = {
   getOne: async (logSheetId: number): Promise<LogSheet> => {
-    const response = await logsheetsClient.getInstance().get(`/api/eld-logs/${logSheetId}/`);
+    const response = await logsheetsClient
+      .getInstance()
+      .get(`/api/eld-logs/${logSheetId}/`);
     return response.data as LogSheet;
   },
   createBasic: async (data: LogSheetMinimalCreateDto): Promise<LogSheet> => {
-    const response = await logsheetsClient.getInstance().post(`/api/eld-logs/`, data);
+    const response = await logsheetsClient
+      .getInstance()
+      .post(`/api/eld-logs/`, data);
     return response.data;
   },
-  create: async (tripId: number, data: LogSheetCreateDto): Promise<LogSheet> => {
+  create: async (
+    tripId: number,
+    data: LogSheetCreateDto,
+  ): Promise<LogSheet> => {
     try {
-      const response = await logsheetsClient.getInstance().post(`/api/eld-logs/`, data);
+      const response = await logsheetsClient
+        .getInstance()
+        .post(`/api/eld-logs/`, data);
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError<ApiError>;
       if (axiosError.response?.status === 400 && axiosError.response?.data) {
-        const validationError = new Error("Validation failed") as ValidationError;
+        const validationError = new Error(
+          "Validation failed",
+        ) as ValidationError;
         validationError.fieldErrors = {};
         validationError.nonFieldErrors = [];
         const serverErrors = axiosError.response.data;
@@ -66,14 +77,21 @@ export const logsheetsService = {
       throw new Error("Log sheet creation failed");
     }
   },
-  update: async (logSheetId: number, data: Partial<LogSheetCreateDto> & { trip_id: number }): Promise<LogSheet> => {
+  update: async (
+    logSheetId: number,
+    data: Partial<LogSheetCreateDto> & { trip_id: number },
+  ): Promise<LogSheet> => {
     try {
-      const response = await logsheetsClient.getInstance().put(`/api/eld-logs/${logSheetId}/`, data);
+      const response = await logsheetsClient
+        .getInstance()
+        .put(`/api/eld-logs/${logSheetId}/`, data);
       return response.data;
     } catch (error) {
       const axiosError = error as AxiosError<ApiError>;
       if (axiosError.response?.status === 400 && axiosError.response?.data) {
-        const validationError = new Error("Validation failed") as ValidationError;
+        const validationError = new Error(
+          "Validation failed",
+        ) as ValidationError;
         validationError.fieldErrors = {};
         validationError.nonFieldErrors = [];
         const serverErrors = axiosError.response.data;
@@ -100,9 +118,6 @@ export const logsheetsService = {
   },
 };
 
-
-
-
 export interface LogSheet {
   id: number;
   date: string;
@@ -117,7 +132,6 @@ export interface LogSheet {
   driver_id: number;
   trip_id: number;
 }
-
 
 type LogSheetResponse = {
   id: number;
@@ -140,18 +154,20 @@ export async function getLogSheetsForTrip(tripId: string): Promise<LogSheet[]> {
   const response = await logsheetsClient
     .getInstance()
     .get<LogSheetResponse[]>(`/api/trips/${tripId}/eld_logs/`);
-  return response.data.map((sheet): LogSheet => ({
-    id: Number(sheet.id),
-    date: String(sheet.date),
-    total_off_duty_time: Number(sheet.total_off_duty_time ?? 0),
-    total_sleeper_berth_time: Number(sheet.total_sleeper_berth_time ?? 0),
-    total_driving_time: Number(sheet.total_driving_time ?? 0),
-    total_on_duty_time: Number(sheet.total_on_duty_time ?? 0),
-    total_duty_time: Number(sheet.total_duty_time ?? 0),
-    miles_driven: Number(sheet.miles_driven ?? 0),
-    hos_violation: Boolean(sheet.hos_violation ?? false),
-    violation_notes: sheet.violation_notes ?? '',
-    driver_id: sheet.driver_id ?? sheet.driver?.id ?? 0,
-    trip_id: sheet.trip_id ?? sheet.trip?.id ?? 0,
-  }));
+  return response.data.map(
+    (sheet): LogSheet => ({
+      id: Number(sheet.id),
+      date: String(sheet.date),
+      total_off_duty_time: Number(sheet.total_off_duty_time ?? 0),
+      total_sleeper_berth_time: Number(sheet.total_sleeper_berth_time ?? 0),
+      total_driving_time: Number(sheet.total_driving_time ?? 0),
+      total_on_duty_time: Number(sheet.total_on_duty_time ?? 0),
+      total_duty_time: Number(sheet.total_duty_time ?? 0),
+      miles_driven: Number(sheet.miles_driven ?? 0),
+      hos_violation: Boolean(sheet.hos_violation ?? false),
+      violation_notes: sheet.violation_notes ?? "",
+      driver_id: sheet.driver_id ?? sheet.driver?.id ?? 0,
+      trip_id: sheet.trip_id ?? sheet.trip?.id ?? 0,
+    }),
+  );
 }

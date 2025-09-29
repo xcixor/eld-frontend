@@ -20,7 +20,10 @@ export interface TripsTableProps<TData extends object> {
   columns: ColumnDef<TData, any>[];
 }
 
-export function TripsTable<TData extends object>({ data, columns }: TripsTableProps<TData>) {
+export function TripsTable<TData extends object>({
+  data,
+  columns,
+}: TripsTableProps<TData>) {
   const table = useReactTable({
     data,
     columns,
@@ -30,11 +33,16 @@ export function TripsTable<TData extends object>({ data, columns }: TripsTablePr
   return (
     <Table>
       <TableHeader>
-        {table.getHeaderGroups().map(headerGroup => (
+        {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id}>
-            {headerGroup.headers.map(header => (
+            {headerGroup.headers.map((header) => (
               <TableHead key={header.id}>
-                {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                {header.isPlaceholder
+                  ? null
+                  : flexRender(
+                      header.column.columnDef.header,
+                      header.getContext(),
+                    )}
               </TableHead>
             ))}
           </TableRow>
@@ -42,9 +50,9 @@ export function TripsTable<TData extends object>({ data, columns }: TripsTablePr
       </TableHeader>
       <TableBody>
         {table.getRowModel().rows.length ? (
-          table.getRowModel().rows.map(row => (
+          table.getRowModel().rows.map((row) => (
             <TableRow key={row.id}>
-              {row.getVisibleCells().map(cell => (
+              {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id}>
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>

@@ -54,7 +54,8 @@ export default function DashboardWrapper({ user, driver }: Props) {
   useEffect(() => {
     if (!user?.id) return;
     setVehiclesLoading(true);
-    vehiclesService.getVehicles()
+    vehiclesService
+      .getVehicles()
       .then((data) => {
         setVehicles(data.results || []);
         setVehiclesError(null);
@@ -65,15 +66,16 @@ export default function DashboardWrapper({ user, driver }: Props) {
 
   const vehicleOptions = vehicles?.map((vehicle) => ({
     label: `${vehicle.year} ${vehicle.make} ${vehicle.model} (${vehicle.vehicle_number})`,
-    value: vehicle.id.toString()
+    value: vehicle.id.toString(),
   }));
 
   useEffect(() => {
     if (!user?.id) return;
     setLoading(true);
-    tripService.fetchTripsForDriver(Number(user.id))
+    tripService
+      .fetchTripsForDriver(Number(user.id))
       .then((data) => {
-  setTrips(data.results || []);
+        setTrips(data.results || []);
         setError(null);
       })
       .catch(() => setError("Failed to load trips."))
@@ -148,11 +150,28 @@ export default function DashboardWrapper({ user, driver }: Props) {
               {trips.map((trip) => (
                 <TableRow key={trip.id}>
                   <TableCell>{trip.trip_number || `#${trip.id}`}</TableCell>
-                  <TableCell>{(trip as unknown as { pickup_location?: string }).pickup_location ?? ""}</TableCell>
-                  <TableCell>{(trip as unknown as { dropoff_location?: string }).dropoff_location ?? ""}</TableCell>
+                  <TableCell>
+                    {(trip as unknown as { pickup_location?: string })
+                      .pickup_location ?? ""}
+                  </TableCell>
+                  <TableCell>
+                    {(trip as unknown as { dropoff_location?: string })
+                      .dropoff_location ?? ""}
+                  </TableCell>
                   <TableCell>{trip.status}</TableCell>
-                  <TableCell>{(trip as unknown as { start_time?: string }).start_time ? new Date((trip as unknown as { start_time?: string }).start_time as string).toLocaleDateString() : ""}</TableCell>
-                  <TableCell>{trip.estimated_end_time ? new Date(trip.estimated_end_time).toLocaleDateString() : ""}</TableCell>
+                  <TableCell>
+                    {(trip as unknown as { start_time?: string }).start_time
+                      ? new Date(
+                          (trip as unknown as { start_time?: string })
+                            .start_time as string,
+                        ).toLocaleDateString()
+                      : ""}
+                  </TableCell>
+                  <TableCell>
+                    {trip.estimated_end_time
+                      ? new Date(trip.estimated_end_time).toLocaleDateString()
+                      : ""}
+                  </TableCell>
                   <TableCell>
                     <Button
                       variant="outline"
@@ -172,4 +191,3 @@ export default function DashboardWrapper({ user, driver }: Props) {
     </div>
   );
 }
-

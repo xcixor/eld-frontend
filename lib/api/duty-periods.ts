@@ -4,11 +4,7 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_BASE_API_URL || "http://127.0.0.1:8000";
 const dutyClient = new AxiosClient(API_BASE_URL);
 
-export type DutyStatus =
-  | "off_duty"
-  | "sleeper_berth"
-  | "driving"
-  | "on_duty";
+export type DutyStatus = "off_duty" | "sleeper_berth" | "driving" | "on_duty";
 
 export interface DutyPeriodDto {
   log_sheet_id: number;
@@ -34,12 +30,12 @@ export interface DutyPeriod extends Omit<DutyPeriodDto, "log_sheet_id"> {
 }
 
 export interface DutyResponse {
-    status_code: number;
-    count: number;
-    next: string | null;
-    previous: string | null;
-    results: DutyPeriod[];
-    error?: string;
+  status_code: number;
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: DutyPeriod[];
+  error?: string;
 }
 
 export const dutyPeriodsService = {
@@ -48,14 +44,16 @@ export const dutyPeriodsService = {
       .getInstance()
       .get(`/api/duty-periods/?log_sheet=${logSheetId}`);
     return {
-        ...res.data,
-        status_code: res.status,
-      };
+      ...res.data,
+      status_code: res.status,
+    };
   },
   create: async (data: DutyPeriodDto): Promise<DutyPeriod> => {
     const payload = sanitizeDutyPeriodPayload(data);
     try {
-      const res = await dutyClient.getInstance().post(`/api/duty-periods/`, payload);
+      const res = await dutyClient
+        .getInstance()
+        .post(`/api/duty-periods/`, payload);
       return res.data as DutyPeriod;
     } catch (err: unknown) {
       const detail = extractAxiosErrorDetail(err);
@@ -69,7 +67,9 @@ export const dutyPeriodsService = {
   ): Promise<DutyPeriod> => {
     const payload = sanitizeDutyPeriodPayload(data as DutyPeriodDto, true);
     try {
-      const res = await dutyClient.getInstance().patch(`/api/duty-periods/${id}/`, payload);
+      const res = await dutyClient
+        .getInstance()
+        .patch(`/api/duty-periods/${id}/`, payload);
       return res.data as DutyPeriod;
     } catch (err: unknown) {
       const detail = extractAxiosErrorDetail(err);
@@ -89,7 +89,10 @@ function round6(n: unknown): number | null {
   return Math.round(num * 1e6) / 1e6;
 }
 
-function sanitizeDutyPeriodPayload<T extends DutyPeriodDto>(data: Partial<T>, isPartial = false): Partial<T> {
+function sanitizeDutyPeriodPayload<T extends DutyPeriodDto>(
+  data: Partial<T>,
+  isPartial = false,
+): Partial<T> {
   const out: Partial<T> = { ...data };
   const record = out as Record<string, unknown>;
   // Round coords to 6 dp and remove if null
@@ -112,11 +115,17 @@ function sanitizeDutyPeriodPayload<T extends DutyPeriodDto>(data: Partial<T>, is
   }
   // Ensure grid minutes are integers within range if present
   if ("grid_start_minute" in record && record.grid_start_minute != null) {
-    const n = typeof record.grid_start_minute === "string" ? Number(record.grid_start_minute) : (record.grid_start_minute as number);
+    const n =
+      typeof record.grid_start_minute === "string"
+        ? Number(record.grid_start_minute)
+        : (record.grid_start_minute as number);
     record.grid_start_minute = Math.min(1439, Math.max(0, Math.round(n)));
   }
   if ("grid_end_minute" in record && record.grid_end_minute != null) {
-    const n = typeof record.grid_end_minute === "string" ? Number(record.grid_end_minute) : (record.grid_end_minute as number);
+    const n =
+      typeof record.grid_end_minute === "string"
+        ? Number(record.grid_end_minute)
+        : (record.grid_end_minute as number);
     record.grid_end_minute = Math.min(1439, Math.max(0, Math.round(n)));
   }
 
@@ -142,7 +151,10 @@ function sanitizeDutyPeriodPayload<T extends DutyPeriodDto>(data: Partial<T>, is
 
 function extractAxiosErrorDetail(err: unknown): unknown {
   if (typeof err === "object" && err !== null) {
-    const maybeAxios = err as { response?: { data?: unknown }; message?: string };
+    const maybeAxios = err as {
+      response?: { data?: unknown };
+      message?: string;
+    };
     if (maybeAxios.response && "data" in maybeAxios.response) {
       return maybeAxios.response.data;
     }

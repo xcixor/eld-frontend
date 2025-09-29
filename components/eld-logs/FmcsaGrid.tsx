@@ -14,10 +14,14 @@ export type FmcsaGridProps = {
   periods: GridPeriod[];
   className?: string;
   showLegend?: boolean;
-  onResize?: (id: number | string, startMinute: number, endMinute: number) => void;
+  onResize?: (
+    id: number | string,
+    startMinute: number,
+    endMinute: number,
+  ) => void;
 };
 
-const VIEW_WIDTH = 1440; 
+const VIEW_WIDTH = 1440;
 const PADDING_LEFT = 16;
 const PADDING_RIGHT = 16;
 const PADDING_TOP = 16;
@@ -40,13 +44,20 @@ const hourTicks = Array.from({ length: 25 }).map((_, i) => i * 60);
 const quarterTicks = Array.from({ length: 96 }).map((_, i) => i * 15);
 const round15 = (m: number) => Math.round(m / 15) * 15;
 
-export default function FmcsaGrid({ periods, className, showLegend = true, onResize }: FmcsaGridProps) {
+export default function FmcsaGrid({
+  periods,
+  className,
+  showLegend = true,
+  onResize,
+}: FmcsaGridProps) {
   const contentHeight = ROWS.length * ROW_HEIGHT + (ROWS.length - 1) * ROW_GAP;
   const height = PADDING_TOP + contentHeight + PADDING_BOTTOM;
   const svgRef = useRef<SVGSVGElement | null>(null);
 
   const sorted = useMemo(() => {
-    return [...periods].sort((a, b) => a.grid_start_minute - b.grid_start_minute);
+    return [...periods].sort(
+      (a, b) => a.grid_start_minute - b.grid_start_minute,
+    );
   }, [periods]);
 
   const transitions = useMemo(() => {
@@ -76,10 +87,13 @@ export default function FmcsaGrid({ periods, className, showLegend = true, onRes
     | { type: "period"; period: GridPeriod; x: number; y: number }
     | null
   >(null);
-  const [resizing, setResizing] = useState<
-    | { id: number | string; handle: "start" | "end"; anchorMinute: number; otherMinute: number; rowIndex: number }
-    | null
-  >(null);
+  const [resizing, setResizing] = useState<{
+    id: number | string;
+    handle: "start" | "end";
+    anchorMinute: number;
+    otherMinute: number;
+    rowIndex: number;
+  } | null>(null);
 
   const toSvgPoint = useCallback((evt: React.MouseEvent | MouseEvent) => {
     const svg = svgRef.current;
@@ -131,9 +145,21 @@ export default function FmcsaGrid({ periods, className, showLegend = true, onRes
     e.stopPropagation();
     const rowIndex = STATUS_TO_ROW[period.duty_status];
     if (handle === "start") {
-      setResizing({ id: period.id ?? `${period.duty_status}-${period.grid_start_minute}` , handle, anchorMinute: period.grid_end_minute, otherMinute: period.grid_end_minute, rowIndex });
+      setResizing({
+        id: period.id ?? `${period.duty_status}-${period.grid_start_minute}`,
+        handle,
+        anchorMinute: period.grid_end_minute,
+        otherMinute: period.grid_end_minute,
+        rowIndex,
+      });
     } else {
-      setResizing({ id: period.id ?? `${period.duty_status}-${period.grid_end_minute}` , handle, anchorMinute: period.grid_start_minute, otherMinute: period.grid_start_minute, rowIndex });
+      setResizing({
+        id: period.id ?? `${period.duty_status}-${period.grid_end_minute}`,
+        handle,
+        anchorMinute: period.grid_start_minute,
+        otherMinute: period.grid_start_minute,
+        rowIndex,
+      });
     }
   };
 
@@ -228,15 +254,30 @@ export default function FmcsaGrid({ periods, className, showLegend = true, onRes
 
         {sorted.map((p, idx) => {
           const y = rowY(STATUS_TO_ROW[p.duty_status]);
-          const x1 = ROW_LABEL_WIDTH + PADDING_LEFT + clamp(p.grid_start_minute);
+          const x1 =
+            ROW_LABEL_WIDTH + PADDING_LEFT + clamp(p.grid_start_minute);
           const x2 = ROW_LABEL_WIDTH + PADDING_LEFT + clamp(p.grid_end_minute);
           return (
             <g
               key={`seg-${p.id ?? idx}`}
-              onMouseEnter={(e) => setHover({ type: "period", period: p, x: e.clientX, y: e.clientY })}
+              onMouseEnter={(e) =>
+                setHover({
+                  type: "period",
+                  period: p,
+                  x: e.clientX,
+                  y: e.clientY,
+                })
+              }
               onMouseLeave={() => setHover(null)}
             >
-              <line x1={x1} x2={x2} y1={y} y2={y} stroke="#111827" strokeWidth={3} />
+              <line
+                x1={x1}
+                x2={x2}
+                y1={y}
+                y2={y}
+                stroke="#111827"
+                strokeWidth={3}
+              />
               {/* Drag handles */}
               <rect
                 x={x1 - 6}
@@ -276,8 +317,16 @@ export default function FmcsaGrid({ periods, className, showLegend = true, onRes
         ))}
         {resizing && (
           <line
-            x1={ROW_LABEL_WIDTH + PADDING_LEFT + Math.min(resizing.anchorMinute, resizing.otherMinute)}
-            x2={ROW_LABEL_WIDTH + PADDING_LEFT + Math.max(resizing.anchorMinute, resizing.otherMinute)}
+            x1={
+              ROW_LABEL_WIDTH +
+              PADDING_LEFT +
+              Math.min(resizing.anchorMinute, resizing.otherMinute)
+            }
+            x2={
+              ROW_LABEL_WIDTH +
+              PADDING_LEFT +
+              Math.max(resizing.anchorMinute, resizing.otherMinute)
+            }
             y1={rowY(resizing.rowIndex)}
             y2={rowY(resizing.rowIndex)}
             stroke="#2563eb"
@@ -311,11 +360,16 @@ export default function FmcsaGrid({ periods, className, showLegend = true, onRes
       {hover && hover.type === "period" && (
         <div
           className="pointer-events-none absolute rounded bg-white px-2 py-1 text-xs shadow ring-1 ring-gray-200"
-          style={{ transform: `translate(${hover.x + 12}px, ${hover.y + 12}px)` }}
+          style={{
+            transform: `translate(${hover.x + 12}px, ${hover.y + 12}px)`,
+          }}
         >
-          <div className="font-medium capitalize">{hover.period.duty_status.replace("_", " ")}</div>
+          <div className="font-medium capitalize">
+            {hover.period.duty_status.replace("_", " ")}
+          </div>
           <div>
-            {formatMinute(hover.period.grid_start_minute)} – {formatMinute(hover.period.grid_end_minute)}
+            {formatMinute(hover.period.grid_start_minute)} –{" "}
+            {formatMinute(hover.period.grid_end_minute)}
           </div>
         </div>
       )}

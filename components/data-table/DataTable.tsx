@@ -13,7 +13,14 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { flexRender } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
 
@@ -23,10 +30,17 @@ type DataTableProps<TData, TValue> = {
   searchPlaceholder?: string;
 };
 
-export function DataTable<TData, TValue>({ columns, data, searchPlaceholder = "Filter..." }: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({
+  columns,
+  data,
+  searchPlaceholder = "Filter...",
+}: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    [],
+  );
+  const [columnVisibility, setColumnVisibility] =
+    React.useState<VisibilityState>({});
   const [globalFilter, setGlobalFilter] = React.useState<string>("");
 
   const table = useReactTable({
@@ -66,25 +80,23 @@ export function DataTable<TData, TValue>({ columns, data, searchPlaceholder = "F
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
-                    {header.isPlaceholder ? null : (
-                      header.column.getCanSort() ? (
-                        <button
-                          className="inline-flex items-center gap-1"
-                          onClick={header.column.getToggleSortingHandler()}
-                        >
-                          {flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                          {({ asc: "↑", desc: "↓" } as Record<string, string>)[
-                            header.column.getIsSorted() as string
-                          ] ?? ""}
-                        </button>
-                      ) : (
-                        flexRender(
+                    {header.isPlaceholder ? null : header.column.getCanSort() ? (
+                      <button
+                        className="inline-flex items-center gap-1"
+                        onClick={header.column.getToggleSortingHandler()}
+                      >
+                        {flexRender(
                           header.column.columnDef.header,
                           header.getContext(),
-                        )
+                        )}
+                        {({ asc: "↑", desc: "↓" } as Record<string, string>)[
+                          header.column.getIsSorted() as string
+                        ] ?? ""}
+                      </button>
+                    ) : (
+                      flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
                       )
                     )}
                   </TableHead>
@@ -95,17 +107,26 @@ export function DataTable<TData, TValue>({ columns, data, searchPlaceholder = "F
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
                   No results.
                 </TableCell>
               </TableRow>
@@ -116,14 +137,14 @@ export function DataTable<TData, TValue>({ columns, data, searchPlaceholder = "F
 
       <div className="flex items-center justify-end gap-2">
         <button
-          className="px-3 py-1 text-sm border rounded disabled:opacity-50"
+          className="rounded border px-3 py-1 text-sm disabled:opacity-50"
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
           Previous
         </button>
         <button
-          className="px-3 py-1 text-sm border rounded disabled:opacity-50"
+          className="rounded border px-3 py-1 text-sm disabled:opacity-50"
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >

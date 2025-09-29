@@ -2,7 +2,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useEffect, useMemo, useState } from "react";
-import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Polyline,
+  Popup,
+  useMap,
+} from "react-leaflet";
 import L from "leaflet";
 
 type LatLng = { lat: number; lng: number };
@@ -23,7 +30,14 @@ const markerIcon: L.Icon = new L.Icon({
   iconAnchor: [12, 41],
 });
 
-export default function TripMap({ current, pickup, dropoff, route, stops, height = 360 }: TripMapProps) {
+export default function TripMap({
+  current,
+  pickup,
+  dropoff,
+  route,
+  stops,
+  height = 360,
+}: TripMapProps) {
   // Relax typings for JSX props due to version skew between react/react-leaflet/leaflet types
   const AnyMapContainer = MapContainer as any;
   const AnyTileLayer = TileLayer as any;
@@ -40,7 +54,9 @@ export default function TripMap({ current, pickup, dropoff, route, stops, height
     if (dropoff) points.push(dropoff);
     if (route && route.length) points.push(...route);
     if (!points.length) return undefined;
-    return L.latLngBounds(points.map((p) => [p.lat, p.lng] as [number, number]));
+    return L.latLngBounds(
+      points.map((p) => [p.lat, p.lng] as [number, number]),
+    );
   }, [current, pickup, dropoff, route]);
 
   // Avoid SSR issues by only rendering after mount
@@ -50,7 +66,12 @@ export default function TripMap({ current, pickup, dropoff, route, stops, height
 
   return (
     <div className="w-full overflow-hidden rounded border" style={{ height }}>
-      <AnyMapContainer center={[center.lat, center.lng]} zoom={6} style={{ height: "100%", width: "100%" }} scrollWheelZoom>
+      <AnyMapContainer
+        center={[center.lat, center.lng]}
+        zoom={6}
+        style={{ height: "100%", width: "100%" }}
+        scrollWheelZoom
+      >
         <AnyTileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -72,14 +93,23 @@ export default function TripMap({ current, pickup, dropoff, route, stops, height
           </AnyMarker>
         )}
         {route && route.length > 0 && (
-          <AnyPolyline positions={route.map((p) => [p.lat, p.lng])} pathOptions={{ color: "#2563eb", weight: 4, opacity: 0.8 }} />
+          <AnyPolyline
+            positions={route.map((p) => [p.lat, p.lng])}
+            pathOptions={{ color: "#2563eb", weight: 4, opacity: 0.8 }}
+          />
         )}
         {stops?.map((s, idx) => (
-          <AnyMarker key={idx} position={[s.position.lat, s.position.lng]} icon={markerIcon}>
+          <AnyMarker
+            key={idx}
+            position={[s.position.lat, s.position.lng]}
+            icon={markerIcon}
+          >
             <Popup>
               <div className="text-sm">
                 <div className="font-medium">{s.title}</div>
-                {s.note && <div className="text-muted-foreground mt-1">{s.note}</div>}
+                {s.note && (
+                  <div className="text-muted-foreground mt-1">{s.note}</div>
+                )}
               </div>
             </Popup>
           </AnyMarker>
