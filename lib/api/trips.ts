@@ -1,6 +1,7 @@
 import { AxiosError } from "axios";
 import AxiosClient from "./client";
-import { ApiError, ValidationError } from "@/types/api";
+import { ApiError } from "@/types/api";
+import { parseValidationErrorFromAxiosError } from "./error-utils";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_BASE_API_URL || "http://127.0.0.1:8000";
@@ -58,6 +59,7 @@ export interface TripResponse {
   error?: string;
 }
 
+
 export const tripService = {
   fetchTripsForDriver: async (driverId: number): Promise<TripResponse> => {
     try {
@@ -91,33 +93,7 @@ export const tripService = {
       const axiosError = error as AxiosError<ApiError>;
 
       if (axiosError.response?.status === 400 && axiosError.response?.data) {
-        const validationError = new Error(
-          "Validation failed",
-        ) as ValidationError;
-        validationError.fieldErrors = {};
-        validationError.nonFieldErrors = [];
-
-        const serverErrors = axiosError.response.data;
-
-        Object.keys(serverErrors).forEach((field) => {
-          const fieldError = serverErrors[field];
-
-          if (field === "non_field_errors") {
-            if (Array.isArray(fieldError)) {
-              validationError.nonFieldErrors = fieldError;
-            } else if (typeof fieldError === "string") {
-              validationError.nonFieldErrors = [fieldError];
-            }
-          } else {
-            if (Array.isArray(fieldError)) {
-              validationError.fieldErrors![field] = fieldError;
-            } else if (typeof fieldError === "string") {
-              validationError.fieldErrors![field] = [fieldError];
-            }
-          }
-        });
-
-        throw validationError;
+        throw parseValidationErrorFromAxiosError(axiosError);
       }
 
       throw new Error("Trip creation failed");
