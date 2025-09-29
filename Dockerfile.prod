@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package*.json ./
 EXPOSE 3000
 
-ENV NODE_ENV=production
+# Install all dependencies, including devDependencies, so TypeScript types are available during build
 RUN npm install
 
 
@@ -16,6 +16,9 @@ RUN npm run build
 
 FROM base as production
 WORKDIR /app
+
+# Use production env in the final image only
+ENV NODE_ENV=production
 
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
