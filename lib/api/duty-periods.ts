@@ -56,7 +56,7 @@ export const dutyPeriodsService = {
     id: number,
     data: Partial<DutyPeriodDto>,
   ): Promise<DutyPeriod> => {
-    const res = await dutyClient.getInstance().put(`/api/duty-periods/${id}/`, data);
+    const res = await dutyClient.getInstance().patch(`/api/duty-periods/${id}/`, data);
     return res.data as DutyPeriod;
   },
   remove: async (id: number): Promise<void> => {

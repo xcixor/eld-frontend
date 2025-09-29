@@ -12,6 +12,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SelectItem } from "@/components/ui/select";
 import { toast } from "sonner";
+import FmcsaGrid from "./FmcsaGrid";
 
 const SummaryValidation = z.object({
   total_off_duty_time: z.string(),
@@ -235,6 +236,47 @@ export function ManageLogSheet({ tripId, logSheetId }: { tripId: number; logShee
     router.refresh();
   };
 
+  const handleResize = async (
+    id: number | string,
+    startMinute: number,
+    endMinute: number,
+  ) => {
+    const target = periods.find((p) => p.id === id) ||
+      periods.find((p) => p.grid_start_minute === startMinute || p.grid_end_minute === endMinute);
+    if (!target) return;
+    try {
+      const startDate = new Date(target.start_time);
+      const endDate = new Date(target.end_time);
+
+      const makeDateFromMinute = (base: Date, minute: number) => {
+        const d = new Date(base);
+        d.setHours(0, 0, 0, 0);
+        const h = Math.floor(minute / 60);
+        const m = minute % 60;
+        d.setHours(h, m, 0, 0);
+        return d.toISOString();
+      };
+
+      const newStartIso = makeDateFromMinute(startDate, startMinute);
+      const newEndIso = makeDateFromMinute(endDate, endMinute);
+
+      const updated = await dutyPeriodsService.update(target.id, {
+        grid_start_minute: startMinute,
+        grid_end_minute: endMinute,
+        start_time: newStartIso,
+        end_time: newEndIso,
+      });
+      setPeriods((prev) => {
+        const next = prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p));
+        recalcSummary(next);
+        return next;
+      });
+      toast.success("Updated period on grid");
+    } catch {
+      toast.error("Failed to update period");
+    }
+  };
+
   return (
     <div className="max-w-5xl mx-auto p-6">
       <div className="mb-6 flex items-center justify-between">
@@ -244,6 +286,22 @@ export function ManageLogSheet({ tripId, logSheetId }: { tripId: number; logShee
           <Button onClick={form.handleSubmit(saveSummary)}>Save Summary</Button>
         </div>
       </div>
+
+      <section className="lg:col-span-2">
+        <h3 className="text-lg font-semibold mb-2">Your Daily Log</h3>
+        <div className="mb-2 text-xs text-gray-600">
+          <strong>Tip:</strong> The grid below is interactive. Drag the ends of a segment to adjust its time. Hover for details.
+        </div>
+        <FmcsaGrid
+          periods={periods.map((p) => ({
+            id: p.id,
+            duty_status: p.duty_status,
+            grid_start_minute: p.grid_start_minute,
+            grid_end_minute: p.grid_end_minute,
+          }))}
+          onResize={handleResize}
+        />
+      </section>
 
       {loading ? (
         <p>Loading…</p>
@@ -316,6 +374,8 @@ export function ManageLogSheet({ tripId, logSheetId }: { tripId: number; logShee
               </form>
             </Form>
           </section>
+
+
         </div>
       )}
     </div>
