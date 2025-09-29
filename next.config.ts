@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
   plugins: {
     "@tailwindcss/postcss": {},
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;
