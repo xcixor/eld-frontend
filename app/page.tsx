@@ -1,12 +1,8 @@
 import AuthHero from "@/components/auth-hero";
 import { LoginForm } from "@/components/auth/login";
-import MaxWidthWrapper from "@/components/MaxWidthWrapper";
-import Image from "next/image";
 import React from "react";
 
-type Props = {};
-
-const login = (props: Props) => {
+const login = () => {
   return (
     <div className="flex h-screen flex-col-reverse justify-center md:flex-row md:items-stretch">
       <div className="basis-1/2 bg-slate-100 p-[10%] md:flex md:flex-col md:justify-center">

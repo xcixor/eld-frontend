@@ -19,9 +19,7 @@ interface Props {
 export default function NavbarRoutes({ user, avatarUrl }: Props) {
   const pathname = usePathname();
 
-  const routes = [
-    { href: "/dashboard", label: "Dashboard" },
-  ];
+  const routes = [{ href: "/dashboard", label: "Dashboard" }];
 
   return (
     <>

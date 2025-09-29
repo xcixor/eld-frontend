@@ -28,7 +28,8 @@ import CustomFormField, { FormFieldType } from "../CustomFormField";
 import SubmitButton from "@/components/submit-button";
 import { RegistrationFormValidation } from "@/lib/validation";
 import { Eye, EyeOff } from "lucide-react";
-import { authService, ValidationError } from "@/lib/api/auth";
+import { authService } from "@/lib/api/auth";
+import { ValidationError } from "@/types/api";
 
 type SignupProps = {
   className?: string;
@@ -113,11 +114,9 @@ export function RegistrationForm({
           toast("Signup failed. Please try again.");
         }
       } catch (error) {
-        // Handle validation errors with field-specific messages
         if (error instanceof Error && "fieldErrors" in error) {
           const validationError = error as ValidationError;
 
-          // Handle non-field errors (show as toast)
           if (
             validationError.nonFieldErrors &&
             validationError.nonFieldErrors.length > 0
@@ -127,9 +126,7 @@ export function RegistrationForm({
             });
           }
 
-          // Handle field-specific errors (show below fields)
           if (validationError.fieldErrors) {
-            // Set server errors on form fields
             Object.keys(validationError.fieldErrors).forEach((fieldName) => {
               const fieldErrors = validationError.fieldErrors![fieldName];
               if (fieldErrors && fieldErrors.length > 0) {
@@ -141,7 +138,6 @@ export function RegistrationForm({
             });
           }
 
-          // Show generic message if there are field errors
           if (
             validationError.fieldErrors &&
             Object.keys(validationError.fieldErrors).length > 0

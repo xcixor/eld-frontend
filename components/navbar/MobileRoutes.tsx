@@ -12,7 +12,6 @@ import { Logo } from "./Logo";
 export const MobileRoutes = async () => {
   const user = await getCurrentSessionUser();
 
-
   return (
     <div className="bg-primary-100 flex h-full flex-col overflow-y-auto border-r border-sky-50 pl-6">
       {user && (

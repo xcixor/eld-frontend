@@ -29,7 +29,7 @@ export default function UserMenuButton({
     <>
       {user ? (
         <DropdownMenu>
-          <DropdownMenuTrigger className="border-transparent focus:border-transparent focus:outline-none focus:ring-0">
+          <DropdownMenuTrigger className="border-transparent focus:border-transparent focus:ring-0 focus:outline-none">
             <div className="flex items-center">
               <Avatar>
                 <AvatarImage src={avatarUrl} />

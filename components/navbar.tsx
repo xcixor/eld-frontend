@@ -13,17 +13,18 @@ export function Navbar() {
 
   if (status === "loading") {
     return (
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
+      <nav className="border-b bg-white shadow-sm">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 justify-between">
             <div className="flex items-center">
-              <Link href="/dashboard" className="text-xl font-bold text-gray-900">
+              <Link
+                href="/dashboard"
+                className="text-xl font-bold text-gray-900"
+              >
                 ELD System
               </Link>
             </div>
-            <div className="flex items-center">
-              Loading...
-            </div>
+            <div className="flex items-center">Loading...</div>
           </div>
         </div>
       </nav>
@@ -32,9 +33,9 @@ export function Navbar() {
 
   if (status === "unauthenticated") {
     return (
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
+      <nav className="border-b bg-white shadow-sm">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 justify-between">
             <div className="flex items-center">
               <Link href="/" className="text-xl font-bold text-gray-900">
                 ELD System
@@ -55,9 +56,9 @@ export function Navbar() {
   }
 
   return (
-    <nav className="bg-white shadow-sm border-b">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+    <nav className="border-b bg-white shadow-sm">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 justify-between">
           <div className="flex items-center">
             <Link href="/dashboard" className="text-xl font-bold text-gray-900">
               ELD System
@@ -65,9 +66,7 @@ export function Navbar() {
           </div>
 
           <div className="flex items-center space-x-4">
-            <span className="text-gray-700">
-              Hi {session?.user?.username}
-            </span>
+            <span className="text-gray-700">Hi {session?.user?.username}</span>
             <Button onClick={handleSignOut} variant="outline">
               Logout
             </Button>
