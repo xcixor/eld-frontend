@@ -5,8 +5,8 @@ export const Logo = () => {
     <Image
       src="/logo.png"
       alt="ELD Logo"
-      height={120}
-      width={120}
+      height={80}
+      width={80}
       className="bg-transparent"
     />
   );

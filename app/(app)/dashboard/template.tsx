@@ -9,7 +9,7 @@ export default function RootLayout({
   return (
     <>
       <Navbar bgColor="bg-secondary-100/50" />
-      <MaxWidthWrapper>{children}</MaxWidthWrapper>
+      <MaxWidthWrapper className="py-4">{children}</MaxWidthWrapper>
     </>
   );
 }

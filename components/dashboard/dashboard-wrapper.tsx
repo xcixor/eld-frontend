@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 
 import {
   Table,
@@ -22,6 +21,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { DriverInfo, LoginUser } from "@/types/next-auth";
+import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Props = {
   user: LoginUser | undefined;
@@ -29,9 +30,9 @@ type Props = {
 };
 
 export default function DashboardWrapper({ user, driver }: Props) {
-  const router = useRouter();
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(false);
+  const [hasFetchedTrips, setHasFetchedTrips] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showCreateTrip, setShowCreateTrip] = useState(false);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -79,18 +80,14 @@ export default function DashboardWrapper({ user, driver }: Props) {
         setError(null);
       })
       .catch(() => setError("Failed to load trips."))
-      .finally(() => setLoading(false));
+      .finally(() => {
+        setLoading(false);
+        setHasFetchedTrips(true);
+      });
   }, [user?.id]);
 
   return (
     <div className="container py-8">
-      <h1 className="mb-6 text-3xl font-bold">Dashboard</h1>
-      <div className="mb-8 rounded-lg bg-white p-6 shadow">
-        <p className="text-gray-600">Welcome to your dashboard!</p>
-        <p className="mt-2 text-sm text-gray-500">
-          You have successfully logged in.
-        </p>
-      </div>
       <div className="space-y-4">
         <Dialog open={showCreateTrip} onOpenChange={setShowCreateTrip}>
           <DialogTrigger asChild>
@@ -129,8 +126,31 @@ export default function DashboardWrapper({ user, driver }: Props) {
             )}
           </DialogContent>
         </Dialog>
-        {loading ? (
-          <p className="text-gray-500">Loading trips...</p>
+        {loading || !hasFetchedTrips ? (
+          <div className="w-full overflow-hidden rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  {Array.from({ length: 7 }).map((_, i) => (
+                    <TableHead key={`head-${i}`}>
+                      <Skeleton className="h-4 w-24" />
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {Array.from({ length: 5 }).map((_, rowIdx) => (
+                  <TableRow key={`row-${rowIdx}`}>
+                    {Array.from({ length: 7 }).map((_, cellIdx) => (
+                      <TableCell key={`cell-${rowIdx}-${cellIdx}`}>
+                        <Skeleton className="h-4 w-full" />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         ) : error ? (
           <p className="text-red-500">{error}</p>
         ) : trips.length > 0 ? (
@@ -173,12 +193,14 @@ export default function DashboardWrapper({ user, driver }: Props) {
                       : ""}
                   </TableCell>
                   <TableCell>
+                    <Link href={`/dashboard/trip/${trip.id}`} >
                     <Button
                       variant="outline"
-                      onClick={() => router.push(`/dashboard/trip/${trip.id}`)}
+                      className="cursor-pointer"
                     >
                       Manage Log Sheets
                     </Button>
+                    </Link>
                   </TableCell>
                 </TableRow>
               ))}
