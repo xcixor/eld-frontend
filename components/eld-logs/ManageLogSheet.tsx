@@ -63,8 +63,10 @@ export function ManageLogSheet({ tripId, logSheetId }: { tripId: number; logShee
         const [periodList] = await Promise.all([
           dutyPeriodsService.listByLogSheet(logSheetId),
         ]);
-        setPeriods(periodList.results);
-        setError(null);
+  setPeriods(periodList.results);
+  setError(null);
+  // Recalculate summary after loading periods
+  recalcSummary(periodList.results);
       } catch {
         setError("Failed to load log sheet details");
       } finally {
