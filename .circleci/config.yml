@@ -57,7 +57,7 @@ jobs:
           args: --service-account=<< parameters.service-account-name >>
 
 workflows:
-  talent:
+  deploy_eld_frontend:
     jobs:
       - push_service_image
       - deploy_service_cloud_run:
